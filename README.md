@@ -12,9 +12,9 @@ bruh.
  
 ## Third-Party licences.
 
-### [mstefarov/fNbt](https://github.com/mstefarov/fNbt)
+### [NiclasOlofsson/fNbt](https://github.com/NiclasOlofsson/fNbt)
 
-Copyright (c) 2012-2018, Matvei "fragmer" Stefarov <me@matvei.org>
+Copyright (c) 2012-2015, Matvei "fragmer" Stefarov <me@matvei.org>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
