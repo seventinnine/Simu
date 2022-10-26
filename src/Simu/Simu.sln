@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32630.192
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Simu", "Simu\Simu.csproj", "{F91C64F3-3DC2-4A9A-83CD-D7B93D56752D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Simu", "Simu\Simu.csproj", "{F91C64F3-3DC2-4A9A-83CD-D7B93D56752D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Simu.APIClient", "Simu.DataAccess\Simu.APIClient.csproj", "{1045F448-02BC-4EC8-B4CD-8FFE1AEB2C40}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{F91C64F3-3DC2-4A9A-83CD-D7B93D56752D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F91C64F3-3DC2-4A9A-83CD-D7B93D56752D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F91C64F3-3DC2-4A9A-83CD-D7B93D56752D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1045F448-02BC-4EC8-B4CD-8FFE1AEB2C40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1045F448-02BC-4EC8-B4CD-8FFE1AEB2C40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1045F448-02BC-4EC8-B4CD-8FFE1AEB2C40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1045F448-02BC-4EC8-B4CD-8FFE1AEB2C40}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
