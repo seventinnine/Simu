@@ -11,4 +11,8 @@
     <PackageReference Include="MiNET.fnbt" Version="1.0.22" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Simu.Common\Simu.Common.csproj" />
+  </ItemGroup>
+
 </Project>
