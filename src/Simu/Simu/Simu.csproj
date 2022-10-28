@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <Folder Include="Pages\SheetCategories\" />
+    <Folder Include="wwwroot\fonts\" />
   </ItemGroup>
 
 </Project>

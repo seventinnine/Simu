@@ -12,7 +12,7 @@ namespace Simu.APICLient
         private HttpClient client = new();
 
 
-        
+
 
         public static void Main(string[] args)
         {
@@ -32,12 +32,21 @@ namespace Simu.APICLient
                 Console.WriteLine(reader.ReadAsTag());
             }
             */
-            Stats stat = new();
-            stat.MoreDamagePercent = 250;
+            AllStats stats1 = new();
+            stats1.Strength.BaseStats.Add("base", 50);
+            stats1.Strength.AdditiveMultipliers.Add("nice", 20);
+            stats1.Strength.AdditiveMultipliers.Add("cock", 30);
+            stats1.Strength.MultiplicativeMultipliers.Add("gdragon", 100);
+            stats1.Strength.UnscalableStats.Add("bestiary", 50);
+            stats1.FlatAttackDamage.BaseStats.Add("weapon", 195);
+            stats1.CritChancePercent.BaseStats.Add("base", 50.0m);
+            stats1.CritDamagePercent.BaseStats.Add("base", 50.0m);
+            //AllStats stats2 = stats1.Copy();
 
-            var res = stat.MergeWith(new Stats { MoreDamagePercent = 350 });
+            //stats1.MergeWith(stats2);
 
-            Console.WriteLine(res.MoreDamagePercent);
+            Console.WriteLine(stats1.Strength.CalculateTotal(new List<ModifierTag>() { ModifierTag.Cubism}));
+            Console.WriteLine(DamageCalculator.CalculateAverageDamagePerHit(stats1, AttackMode.Melee));
 
         }
     }

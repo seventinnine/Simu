@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace Simu.Common
 {
-    public enum StatTag
+    /// <summary>
+    /// Tags for <see cref="Modifier"/>s.
+    /// </summary>
+    public enum ModifierTag
     {
         Base,
         Armor,
@@ -18,6 +21,15 @@ namespace Simu.Common
         Effect,
         Slayer,
         Pet,
-        Conditional
+        Conditional,
+        Undead,
+        Cubism,
+        Arachnids,
+        Ender,
+        Blazes,
+        FirstStrike,
+        TripleStrike,
+        Flame,
+        Venomous
     }
 }
