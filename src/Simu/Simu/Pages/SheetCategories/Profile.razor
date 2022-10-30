@@ -1,0 +1,46 @@
+﻿
+
+<h1>Profile-Specific-Stuff</h1>
+
+<EditForm EditContext="context" OnValidSubmit="OnValidSubmit"> 
+    <DataAnnotationsValidator/>
+
+<div class="container">
+    <div class="form">
+        <h2>Skyblock Level</h2>
+        <!--
+
+        <label>
+            Skyblock Level:
+            <input type="number" value="@ProfileData.SkyblockLevel" @oninput="args => ProfileData.SetSkyblockLevel(args.Value!.ToString()!)"/>
+            
+        </label>
+        -->
+        <label>
+            Skyblock Level:
+            <InputNumber @bind-Value="ProfileData.SkyblockLevel"/>
+            <ValidationMessage DisplayName="Skyblock Level" For="@(() => ProfileData.SkyblockLevel)" />
+        </label>
+
+        <button type="submit" class="btn btn-primary">Submit</button>
+
+    </div>
+    <div>
+        <h2>Skills</h2>
+        <label>
+            Farming:
+            <InputNumber @bind-Value="ProfileData.Level_Farming"/>
+            <ValidationMessage DisplayName="Farming Level" For="@(() => ProfileData.Level_Farming)" />
+        </label>
+
+    </div>
+
+</div>
+</EditForm>
+
+
+<h2>Skills (enchanting, alchemy, foraging)</h2>
+
+<h2>melody</h2>
+
+<h2>slayer level stats</h2>

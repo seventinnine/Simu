@@ -46,45 +46,76 @@ namespace Simu.Common
     }
 
     /// <summary>
-    /// Calulcates the damage based on provided <see cref="AllStats"/> and <
+    /// Calulcates the values for all <see cref="Stats"/>
     /// </summary>
-    public class DamageCalculator
+    public class StatsCalculator
     {
-        /// <summary>
-        /// Calculates the damage per hit based on provided <paramref name="stats"/> and <paramref name="mode"/>.
-        /// </summary>
-        /// <param name="stats"></param>
-        /// <param name="mode"></param>
-        /// <returns></returns>
-        public static decimal CalculateAverageDamagePerHit(AllStats stats, AttackMode mode)
+        public Stats AllStats { get; set; }
+        public AttackMode AttackMode { get; set; }
+
+        public StatsCalculator(Stats allStats, AttackMode attackMode)
         {
-            if (mode == AttackMode.Melee)
+            AllStats = allStats;
+            AttackMode = attackMode;
+        }
+
+        public void RecalculateAllStats()
+        {
+            AllStats.FlatAttackDamage.CalculateTotal(AllStats.ConditionalTags);
+            AllStats.FlatAbilityDamage.CalculateTotal(AllStats.ConditionalTags);
+            AllStats.IncreasedDamageMeleePercent.CalculateTotal(AllStats.ConditionalTags);
+            AllStats.IncreasedDamageRangedPercent.CalculateTotal(AllStats.ConditionalTags);
+            AllStats.IncreasedDamageMagicPercent.CalculateTotal(AllStats.ConditionalTags);
+            AllStats.MoreDamagePercent.CalculateTotal(AllStats.ConditionalTags);
+            AllStats.Health.CalculateTotal(AllStats.ConditionalTags);
+            AllStats.Defense.CalculateTotal(AllStats.ConditionalTags);
+            AllStats.TrueDefense.CalculateTotal(AllStats.ConditionalTags);
+            AllStats.Speed.CalculateTotal(AllStats.ConditionalTags);
+            AllStats.Strength.CalculateTotal(AllStats.ConditionalTags);
+            AllStats.Intelligence.CalculateTotal(AllStats.ConditionalTags);
+            AllStats.CritChancePercent.CalculateTotal(AllStats.ConditionalTags);
+            AllStats.CritDamagePercent.CalculateTotal(AllStats.ConditionalTags);
+            AllStats.AttackSpeedPercent.CalculateTotal(AllStats.ConditionalTags);
+            AllStats.Ferocity.CalculateTotal(AllStats.ConditionalTags);
+            AllStats.AbilityDamagePercent.CalculateTotal(AllStats.ConditionalTags);
+            AllStats.MagicFind.CalculateTotal(AllStats.ConditionalTags);
+            AllStats.PetLuck.CalculateTotal(AllStats.ConditionalTags);
+            AllStats.SeaCreatureChance.CalculateTotal(AllStats.ConditionalTags);
+        }
+
+        /// <summary>
+        /// Calculates the damage per hit based on <see cref="AllStats"/> and <see cref="AttackMode"/>.
+        /// </summary>
+        /// <returns></returns>
+        public decimal CalculateAverageDamagePerHit()
+        {
+            if (AttackMode == AttackMode.Melee)
             {
-                decimal baseDamage = stats.FlatAttackDamage.CalculateTotal(stats.ConditionalTags) + 5.0m;
-                decimal strengthMultiplier = 1.0m + stats.Strength.CalculateTotal(stats.ConditionalTags) / 100.0m;
-                decimal critChance = Math.Min(stats.CritChancePercent.CalculateTotal(stats.ConditionalTags) / 100.0m, 1.0m);
-                decimal critDamageMuliplier = 1.0m + stats.CritDamagePercent.CalculateTotal(stats.ConditionalTags) / 100.0m;
-                decimal increasedDamageMultiplier = 1.0m + stats.IncreasedDamageMeleePercent.CalculateTotal(stats.ConditionalTags);
-                decimal moreDamageMultiplier = 1.0m + stats.MoreDamagePercent.CalculateTotal(stats.ConditionalTags);
+                decimal baseDamage = AllStats.FlatAttackDamage.CalculateTotal(AllStats.ConditionalTags) + 5.0m;
+                decimal strengthMultiplier = 1.0m + AllStats.Strength.CalculateTotal(AllStats.ConditionalTags) / 100.0m;
+                decimal critChance = Math.Min(AllStats.CritChancePercent.CalculateTotal(AllStats.ConditionalTags) / 100.0m, 1.0m);
+                decimal critDamageMuliplier = 1.0m + AllStats.CritDamagePercent.CalculateTotal(AllStats.ConditionalTags) / 100.0m;
+                decimal increasedDamageMultiplier = 1.0m + AllStats.IncreasedDamageMeleePercent.CalculateTotal(AllStats.ConditionalTags);
+                decimal moreDamageMultiplier = 1.0m + AllStats.MoreDamagePercent.CalculateTotal(AllStats.ConditionalTags);
                 return baseDamage * strengthMultiplier * (critDamageMuliplier * critChance + (1.0m - critChance)) * increasedDamageMultiplier * moreDamageMultiplier; 
             }
-            else if (mode == AttackMode.Ranged)
+            else if (AttackMode == AttackMode.Ranged)
             {
-                decimal baseDamage = stats.FlatAttackDamage.CalculateTotal(stats.ConditionalTags) + 5.0m;
-                decimal strengthMultiplier = 1.0m + stats.Strength.CalculateTotal(stats.ConditionalTags) / 100.0m;
-                decimal critChance = Math.Min(stats.CritChancePercent.CalculateTotal(stats.ConditionalTags) / 100.0m, 1.0m);
-                decimal critDamageMuliplier = 1.0m + stats.CritDamagePercent.CalculateTotal(stats.ConditionalTags) / 100.0m;
-                decimal increasedDamageMultiplier = 1.0m + stats.IncreasedDamageRangedPercent.CalculateTotal(stats.ConditionalTags);
-                decimal moreDamageMultiplier = 1.0m + stats.MoreDamagePercent.CalculateTotal(stats.ConditionalTags);
+                decimal baseDamage = AllStats.FlatAttackDamage.CalculateTotal(AllStats.ConditionalTags) + 5.0m;
+                decimal strengthMultiplier = 1.0m + AllStats.Strength.CalculateTotal(AllStats.ConditionalTags) / 100.0m;
+                decimal critChance = Math.Min(AllStats.CritChancePercent.CalculateTotal(AllStats.ConditionalTags) / 100.0m, 1.0m);
+                decimal critDamageMuliplier = 1.0m + AllStats.CritDamagePercent.CalculateTotal(AllStats.ConditionalTags) / 100.0m;
+                decimal increasedDamageMultiplier = 1.0m + AllStats.IncreasedDamageRangedPercent.CalculateTotal(AllStats.ConditionalTags);
+                decimal moreDamageMultiplier = 1.0m + AllStats.MoreDamagePercent.CalculateTotal(AllStats.ConditionalTags);
                 return baseDamage * strengthMultiplier * (critDamageMuliplier * critChance + (1.0m - critChance)) * increasedDamageMultiplier * moreDamageMultiplier;
             }
-            else if (mode == AttackMode.Magic)
+            else if (AttackMode == AttackMode.Magic)
             {
-                decimal baseDamage = stats.FlatAbilityDamage.CalculateTotal(stats.ConditionalTags) + 5.0m;
-                decimal intelligenceMultiplier = (stats.Intelligence.CalculateTotal(stats.ConditionalTags) / 100.0m) * stats.IntelligenceScaleFactor;
-                decimal abilityDamageMultiplier = 1.0m + stats.AbilityDamagePercent.CalculateTotal(stats.ConditionalTags) / 100.0m;
-                decimal increasedDamageMultiplier = 1.0m + stats.IncreasedDamageRangedPercent.CalculateTotal(stats.ConditionalTags);
-                decimal moreDamageMultiplier = 1.0m + stats.MoreDamagePercent.CalculateTotal(stats.ConditionalTags);
+                decimal baseDamage = AllStats.FlatAbilityDamage.CalculateTotal(AllStats.ConditionalTags) + 5.0m;
+                decimal intelligenceMultiplier = (AllStats.Intelligence.CalculateTotal(AllStats.ConditionalTags) / 100.0m) * AllStats.IntelligenceScaleFactor;
+                decimal abilityDamageMultiplier = 1.0m + AllStats.AbilityDamagePercent.CalculateTotal(AllStats.ConditionalTags) / 100.0m;
+                decimal increasedDamageMultiplier = 1.0m + AllStats.IncreasedDamageRangedPercent.CalculateTotal(AllStats.ConditionalTags);
+                decimal moreDamageMultiplier = 1.0m + AllStats.MoreDamagePercent.CalculateTotal(AllStats.ConditionalTags);
                 return baseDamage * intelligenceMultiplier * abilityDamageMultiplier * increasedDamageMultiplier * moreDamageMultiplier;
             }
             else
@@ -94,14 +125,12 @@ namespace Simu.Common
         }
 
         /// <summary>
-        /// Calculates the damage per second based on provided <paramref name="stats"/> and <paramref name="mode"/>.
+        /// Calculates the damage per second based on <see cref="AllStats"/> and <see cref="AttackMode"/>.
         /// </summary>
-        /// <param name="stats"></param>
-        /// <param name="mode"></param>
         /// <returns></returns>
-        public static decimal CalculateDamagePerSecond(AllStats stats, AttackMode mode)
+        public decimal CalculateDamagePerSecond()
         {
-            decimal damagePerHit = CalculateAverageDamagePerHit(stats, mode);
+            decimal damagePerHit = CalculateAverageDamagePerHit();
             return damagePerHit; // TODO
         }
     }

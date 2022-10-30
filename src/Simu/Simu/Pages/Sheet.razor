@@ -3,15 +3,7 @@
 
 <h3>Sheet</h3>
 
-<h1>Profile-Specific-Stuff</h1>
-
-<h2>Skyblock level</h2>
-
-<h2>Skills (enchanting, alchemy, foraging)</h2>
-
-<h2>melody</h2>
-
-<h2>slayer level stats</h2>
+<Simu.Pages.SheetCategories.Profile AllStats="Stats" OnStatsChanged="RecalculateDamage"/>
 
 
 <h1>Accessories</h1>
@@ -60,4 +52,23 @@
 
 <h1>(near the final damage section/breakdown) mode (melee/ranged/magic)</h1>
 
+<div>
+    Total Values:
+    <br />
+    Health: 
+    <span>@Stats.Health.Total 
+        @if(Stats.Health.Total != Stats.Health.TotalUncapped) 
+        {
+            <span> (@Stats.Health.TotalUncapped.ToString("N2"))</span>
+        }
+    </span>
+    <br />
+    Strength: 
+    <span>@Stats.Strength.Total 
+        @if(Stats.Strength.Total != Stats.Strength.TotalUncapped) 
+        {
+            <span> (@Stats.Strength.TotalUncapped.ToString("N2"))</span>
+        }
+    </span>
 
+</div>

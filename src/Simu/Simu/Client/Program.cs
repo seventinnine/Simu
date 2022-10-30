@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Simu;
+using Simu.Logic;
 
 namespace Simu
 {
@@ -13,6 +14,7 @@ namespace Simu
             builder.RootComponents.Add<HeadOutlet>("head::after");
 
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+            builder.Services.AddScoped<ProfileLogic>();
 
             await builder.Build().RunAsync();
         }

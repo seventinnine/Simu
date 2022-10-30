@@ -8,19 +8,46 @@ namespace Simu.Common
     /// Has a (per <see cref="ModifierList"/>) unique <see cref="ID"/> (for later removal from the calculation).
     /// If this modifier should only apply under certain conditions, <see cref="RequiredTags"/> specifies which <see cref="ModifierTag"/>s must currently be selected for the calculation.
     /// </summary>
-    public class Modifier
+    public class Modifier : ICloneable
     {
         public string ID { get; set; } = string.Empty;
-        public List<ModifierTag> RequiredTags { get; set; } = new();
         public decimal Value { get; set; }
+        public ModifierTag RequiredTags { get; set; }
+        public decimal LocalMultiplier { get; set; } = 1.0m;
         public char Unit { get; set; }
+
+        public Modifier(string iD, decimal value)
+        {
+            ID = iD;
+            Value = value;
+            RequiredTags = ModifierTag.None;
+        }
+        public Modifier(string iD, decimal value, ModifierTag requiredTags)
+        {
+            ID = iD;
+            Value = value;
+            RequiredTags = requiredTags;
+        }
+        public Modifier(string iD, decimal value, ModifierTag requiredTags, decimal localMultiplier, char unit)
+        {
+            ID = iD;
+            Value = value;
+            RequiredTags = requiredTags;
+            LocalMultiplier = localMultiplier;
+            Unit = unit;
+        }
 
         public override string ToString()
         {
-            if (!RequiredTags.Any())
+            if (RequiredTags != ModifierTag.None)
                 return $"{ID}{Unit}";
             else
-                return $"{Value}{Unit} ({ID} ({RequiredTags.Select(e => e.ToString()).Aggregate((l, r) => $"{l}, {r}")}))";
+                return $"{Value}{Unit} ({ID} ({RequiredTags /*.Select(e => e.ToString()).Aggregate((l, r) => $"{l}, {r}")*/}))";
+        }
+
+        public object Clone()
+        {
+            return new Modifier(ID, Value, RequiredTags, LocalMultiplier, Unit);
         }
     }
 
@@ -29,7 +56,40 @@ namespace Simu.Common
     /// </summary>
     public class ModifierList : IEnumerable<Modifier>
     {
+        private ModifierTag _lastUsedTagsProduct;
+        private decimal _cachedValueProduct;
+        private bool _cacheValidProduct = false;
+        private ModifierTag _lastUsedTagsSum;
+        private decimal _cachedValueSum;
+        private bool _cacheValidSum = false;
+
+        public OnPropertyChanged? OnCacheInvalidated { get; set; }
         private Dictionary<string, Modifier> modifiers { get; set; } = new();
+
+        /// <summary>
+        /// Invalidates the cache and notifies its <see cref="ModifierList"/> of the cache being invalidated.
+        /// </summary>
+        private void InvalidateCaches()
+        {
+            _cacheValidProduct = false;
+            _cacheValidSum = false;
+            // invalidate parent caches
+            OnCacheInvalidated?.Invoke();
+        }
+
+        /// <summary>
+        /// Creates a deep-clone.
+        /// </summary>
+        /// <returns></returns>
+        public ModifierList Clone()
+        {
+            ModifierList cpy = new();
+            foreach (var entry in modifiers)
+            {
+                cpy.modifiers.Add(entry.Key, (Modifier)entry.Value.Clone());
+            }
+            return cpy;
+        }
 
         /// <summary>
         /// Adds <paramref name="modifier"/> to <see cref="ModifierList"/>.
@@ -41,6 +101,7 @@ namespace Simu.Common
             if (modifiers.ContainsKey(modifier.ID)) throw new ArgumentException("Duplicate key not allowed.");
 
             modifiers[modifier.ID] = modifier;
+            InvalidateCaches();
         }
 
         /// <summary>
@@ -50,7 +111,7 @@ namespace Simu.Common
         /// <exception cref="ArgumentException"></exception>
         public void Add(string id, decimal value)
         {
-            Add(new Modifier { ID = id, Value = value });
+            Add(new Modifier(id, value));
         }
 
         /// <summary>
@@ -58,9 +119,9 @@ namespace Simu.Common
         /// </summary>
         /// <param name="modifier"></param>
         /// <exception cref="ArgumentException"></exception>
-        public void Add(string id, decimal value, params ModifierTag[] tags)
+        public void Add(string id, decimal value, ModifierTag tags)
         {
-            Add(new Modifier { ID = id, Value = value, RequiredTags = tags.ToList()});
+            Add(new Modifier(id, value, tags));
         }
 
         /// <summary>
@@ -70,7 +131,7 @@ namespace Simu.Common
         /// <exception cref="ArgumentException"></exception>
         public void Remove(Modifier modifier)
         {
-            modifiers.Remove(modifier.ID);
+            Remove(modifier.ID);
         }
 
         /// <summary>
@@ -83,6 +144,20 @@ namespace Simu.Common
             if (!modifiers.ContainsKey(modifierName)) throw new ArgumentException("Key does not exist.");
 
             modifiers.Remove(modifierName);
+            InvalidateCaches();
+        }
+
+        /// <summary>
+        /// Replaces <see cref="Modifier"/> with <paramref name="modifier"/> and forces a cache invalidation.
+        /// </summary>
+        /// <param name="modifier"></param>
+        /// <exception cref="ArgumentException"></exception>
+        public void InvalidateCacheAndReplaceModifier(Modifier modifier)
+        {
+            if (!modifiers.ContainsKey(modifier.ID)) throw new ArgumentException("Key does not exist.");
+
+            modifiers[modifier.ID] = modifier;
+            InvalidateCaches();
         }
 
         /// <summary>
@@ -91,16 +166,20 @@ namespace Simu.Common
         /// </summary>
         /// <param name="tags"></param>
         /// <returns></returns>
-        public decimal ProductForMatchingTags(ICollection<ModifierTag> tags)
+        public decimal ProductForMatchingTags(ModifierTag tags)
         {
+            if (_cacheValidProduct && _lastUsedTagsProduct.IsSubsetOf(tags)) return _cachedValueProduct;
             decimal product = 1.0m;
             foreach (var pair in modifiers)
             {
-                if (!pair.Value.RequiredTags.Any() || tags.Intersect(pair.Value.RequiredTags).Any())
+                if (!pair.Value.RequiredTags.IsSubsetOf(tags))
                 {
-                    product *= (1.0m + pair.Value.Value / 100.0m);
+                    product *= (1.0m + (pair.Value.Value * pair.Value.LocalMultiplier) / 100.0m);
                 }
             }
+            _lastUsedTagsProduct = tags;
+            _cacheValidProduct = true;
+            _cachedValueProduct = product - 1.0m;
             return product - 1.0m;
         }
         /// <summary>
@@ -109,16 +188,20 @@ namespace Simu.Common
         /// </summary>
         /// <param name="tags"></param>
         /// <returns></returns>
-        public decimal SumForMatchingTags(ICollection<ModifierTag> tags)
+        public decimal SumForMatchingTags(ModifierTag tags)
         {
+            if (_cacheValidSum && _lastUsedTagsSum.IsSubsetOf(tags)) return _cachedValueSum;
             decimal sum = 0.0m;
             foreach (var pair in modifiers)
             {
-                if (!pair.Value.RequiredTags.Any() || tags.Intersect(pair.Value.RequiredTags).Any())
+                if (pair.Value.RequiredTags.IsSubsetOf(tags))
                 {
-                    sum += pair.Value.Value;
+                    sum += (pair.Value.Value * pair.Value.LocalMultiplier);
                 }
             }
+            _lastUsedTagsSum = tags;
+            _cacheValidSum = true;
+            _cachedValueSum = sum;
             return sum;
         }
 
@@ -135,6 +218,8 @@ namespace Simu.Common
         }
     }
 
+    public delegate void OnPropertyChanged();
+
     /// <summary>
     /// Compound of <see cref="ModifierList"/> with different semantics.
     /// Each <see cref="Stat"/> can have <see cref="BaseStats"/>, <see cref="UnscalableStats"/>, <see cref="AdditiveMultipliers"/> and <see cref="MultiplicativeMultipliers"/>.
@@ -142,66 +227,96 @@ namespace Simu.Common
     /// </summary>
     public class Stat
     {
+        private ModifierTag _lastUsedTags;
+        private decimal _cachedValue;
+        private decimal _cachedValueUncapped;
+        private bool _cacheValid;
+
         /// <summary>
         /// Optional default cap.
         /// <see langword="null"/> means uncapped.
         /// </summary>
-        public decimal? DefaultCap { get; set; }
+        public decimal? DefaultCap { get; }
+
+        private decimal? _modifiedCap;
         /// <summary>
         /// Overrides <see cref="DefaultCap"/>.
+        /// Invalidates cache.
         /// <see langword="null"/> means <see cref="DefaultCap"/> is used.
         /// </summary>
-        public decimal? ModifiedCap { get; set; }
+        public decimal? ModifiedCap { get => _modifiedCap; set => UpdateModifiedCap(value); }
+
+        /// <summary>
+        /// Updates value of <see cref="_modifiedCap"/> and invalidates cache.
+        /// </summary>
+        /// <param name="value"></param>
+        private void UpdateModifiedCap(decimal? value)
+        {
+            _modifiedCap = value;
+            InvalidateCache();
+        }
+
         /// <summary>
         /// Can be scaled with <see cref="AdditiveMultipliers"/> and <see cref="MultiplicativeMultipliers"/>.
         /// </summary>
-        public ModifierList BaseStats { get; } = new();
+        public ModifierList BaseStats { get; private set; } = new();
         /// <summary>
         /// Cannot be scaled by any means.
         /// Those are added to the final result at the end.
         /// </summary>
-        public ModifierList UnscalableStats { get; } = new();
+        public ModifierList UnscalableStats { get; private set; } = new();
         /// <summary>
         /// Each <see cref="Modifier"/> is added together and the final value is used as another multiplier.
         /// </summary>
-        public ModifierList AdditiveMultipliers { get; } = new();
+        public ModifierList AdditiveMultipliers { get; private set; } = new();
         /// <summary>
         /// All <see cref="Modifier"/>s are factored together and the final value is used as another multiplier.
         /// </summary>
-        public ModifierList MultiplicativeMultipliers { get; } = new();
+        public ModifierList MultiplicativeMultipliers { get; private set; } = new();
+
+        /// <summary>
+        /// Storage for the calcuated total value.
+        /// </summary>
+        public decimal Total { get => _cachedValue; }
+
+        /// <summary>
+        /// Storage for the calculated total value, ignoring the cap.
+        /// </summary>
+        public decimal TotalUncapped { get => _cachedValueUncapped; }
 
         public Stat(decimal? defaultCap = null)
         {
+            BaseStats = new();
+            BaseStats.OnCacheInvalidated += InvalidateCache;
+            UnscalableStats = new();
+            UnscalableStats.OnCacheInvalidated += InvalidateCache;
+            AdditiveMultipliers = new();
+            AdditiveMultipliers.OnCacheInvalidated += InvalidateCache;
+            MultiplicativeMultipliers = new();
+            MultiplicativeMultipliers.OnCacheInvalidated += InvalidateCache;
             this.DefaultCap = defaultCap;
+            _cacheValid = false;
         }
-
-        /// <summary>
-        /// Copy all <see cref="Modifier"/>s from <paramref name="src"/> to <paramref name="dest"/>.
-        /// </summary>
-        /// <param name="dest"></param>
-        /// <param name="src"></param>
-        /// <exception cref="ArgumentException"></exception>
-        private void MergeModifiers(ModifierList dest, ModifierList src)
+            
+        private void InvalidateCache()
         {
-            foreach (var item in src)
-            {
-                dest.Add(item);
-            }
+            _cacheValid = false;
         }
 
         /// <summary>
-        /// Adds the contents of the <see cref="ModifierList"/>s of <paramref name="other"/> to this.
+        /// Creates a deep-clone.
         /// </summary>
-        /// <param name="other"></param>
         /// <returns></returns>
-        public Stat Combine(Stat other)
+        public Stat Clone()
         {
-            MergeModifiers(this.BaseStats, other.BaseStats);
-            MergeModifiers(this.UnscalableStats, other.UnscalableStats);
-            MergeModifiers(this.AdditiveMultipliers, other.AdditiveMultipliers);
-            MergeModifiers(this.MultiplicativeMultipliers, other.MultiplicativeMultipliers);
-            return this;
-        }
+            Stat cpy = new(DefaultCap);
+            cpy.ModifiedCap = ModifiedCap;
+            cpy.BaseStats = BaseStats.Clone();
+            cpy.UnscalableStats = UnscalableStats.Clone();
+            cpy.AdditiveMultipliers = AdditiveMultipliers.Clone();
+            cpy.MultiplicativeMultipliers = MultiplicativeMultipliers.Clone();
+            return cpy;
+        }        
 
         /// <summary>
         /// Calculates the total of all <see cref="ModifierList"/>s with respect to their semantics.
@@ -210,19 +325,29 @@ namespace Simu.Common
         /// </summary>
         /// <param name="tags"></param>
         /// <returns></returns>
-        public decimal CalculateTotal(ICollection<ModifierTag> tags)
+        public decimal CalculateTotal(ModifierTag tags)
         {
+            if (_cacheValid && _lastUsedTags.IsSubsetOf(tags)) return _cachedValue;
+
             decimal sumBase = BaseStats.SumForMatchingTags(tags);
             decimal sumAdditive = AdditiveMultipliers.SumForMatchingTags(tags) / 100.0m;
             decimal productMultiplicative = MultiplicativeMultipliers.ProductForMatchingTags(tags);
             decimal sumUnscalable = UnscalableStats.SumForMatchingTags(tags);
 
-            decimal? capToUse = ModifiedCap ?? DefaultCap ?? null;
-
             decimal total = (sumBase * (1.0m + sumAdditive) * (1.0m + productMultiplicative)) + sumUnscalable;
 
-            if (capToUse is null) return total;
-            else return Math.Min(total, capToUse.Value);
+            // handle modified cap
+            decimal? capToUse = ModifiedCap ?? DefaultCap ?? null;
+
+            decimal result = capToUse is null ? total : Math.Min(total, capToUse.Value);
+
+            // cache result
+            _cachedValueUncapped = total;
+            _cachedValue = result;
+            _cacheValid = true;
+            _lastUsedTags = tags;
+
+            return result;
         }
 
     }
@@ -231,122 +356,98 @@ namespace Simu.Common
     /// Data class for storage of the character stats (+ selected tags for conditionals, + weapon specific stuff like int scaling).
     /// Compound of multiple <see cref="Stat"/>s.
     /// </summary>
-    public class AllStats
+    public class Stats
     {
-        public SortedSet<ModifierTag> ConditionalTags { get; } = new();
+        public ModifierTag ConditionalTags { get; private set; } = ModifierTag.None;
 
         public decimal IntelligenceScaleFactor { get; set; }
-
+        
         #region Stats
 
-        public Stat FlatAttackDamage { get; } = new();
+        public Stat FlatAttackDamage { get; private set; } = new();
 
-        public Stat FlatAbilityDamage { get; } = new();
+        public Stat FlatAbilityDamage { get; private set;  } = new();
 
-        public Stat IncreasedDamageMeleePercent { get; } = new();
+        public Stat IncreasedDamageMeleePercent { get; private set; } = new();
 
-        public Stat IncreasedDamageRangedPercent { get; } = new();
+        public Stat IncreasedDamageRangedPercent { get; private set;  } = new();
 
-        public Stat IncreasedDamageMagicPercent { get; } = new();
+        public Stat IncreasedDamageMagicPercent { get; private set;  } = new();
 
-        public Stat MoreDamagePercent { get; } = new();
+        public Stat MoreDamagePercent { get; private set;  } = new();
 
-        public Stat Health { get; } = new();
+        public Stat Health { get; private set;  } = new();
 
-        public Stat Defense { get; } = new();
+        public Stat Defense { get; private set;  } = new();
 
-        public Stat TrueDefense { get; } = new();
+        public Stat TrueDefense { get; private set;  } = new();
 
-        public Stat Speed { get; } = new(400.0m);
+        public Stat Speed { get; private set;  } = new(400.0m);
 
-        public Stat Strength { get; } = new();
+        public Stat Strength { get; private set;  } = new();
 
-        public Stat Intelligence { get; } = new();
+        public Stat Intelligence { get; private set;  } = new();
 
-        public Stat CritChancePercent { get; } = new(100.0m);
+        public Stat CritChancePercent { get; private set;  } = new(100.0m);
 
-        public Stat CritDamagePercent { get; } = new();
+        public Stat CritDamagePercent { get; private set;  } = new();
 
-        public Stat AttackSpeedPercent { get; } = new(100.0m);
+        public Stat AttackSpeedPercent { get; private set;  } = new(100.0m);
 
-        public Stat Ferocity { get; } = new();
+        public Stat Ferocity { get; private set;  } = new();
 
-        public Stat AbilityDamagePercent { get; } = new();
+        public Stat AbilityDamagePercent { get; private set;  } = new();
 
-        public Stat MagicFind { get; } = new();
+        public Stat MagicFind { get; private set;  } = new();
 
-        public Stat PetLuck { get; } = new();
+        public Stat PetLuck { get; private set;  } = new();
 
-        public Stat SeaCreatureChance { get; } = new(100.0m);
+        public Stat SeaCreatureChance { get; private set;  } = new(100.0m);
 
         #endregion
 
-        /// <summary>
-        /// Add all stats of <paramref name="other"/> to this.
-        /// Merge stats
-        /// </summary>
-        /// <param name="other"></param>
-        public void MergeWith(AllStats other)
+        public void AddConditionalTag(ModifierTag tag)
         {
-            IntelligenceScaleFactor = other.IntelligenceScaleFactor;
-            FlatAttackDamage.Combine(other.FlatAttackDamage);
-            FlatAbilityDamage.Combine(other.FlatAbilityDamage);
-            IncreasedDamageMeleePercent.Combine(other.IncreasedDamageMeleePercent);
-            IncreasedDamageRangedPercent.Combine(other.IncreasedDamageRangedPercent);
-            IncreasedDamageMagicPercent.Combine(other.IncreasedDamageMagicPercent);
-            MoreDamagePercent.Combine(other.MoreDamagePercent);
-            Health.Combine(other.Health);
-            Defense.Combine(other.Defense);
-            TrueDefense.Combine(other.TrueDefense);
-            Speed.Combine(other.Speed);
-            Strength.Combine(other.Strength);
-            Intelligence.Combine(other.Intelligence);
-            CritChancePercent.Combine(other.CritChancePercent);
-            CritDamagePercent.Combine(other.CritDamagePercent);
-            AttackSpeedPercent.Combine(other.AttackSpeedPercent);
-            Ferocity.Combine(other.Ferocity);
-            AbilityDamagePercent.Combine(other.AbilityDamagePercent);
-            MagicFind.Combine(other.MagicFind);
-            PetLuck.Combine(other.PetLuck);
-            SeaCreatureChance.Combine(other.SeaCreatureChance);
+            ConditionalTags = ConditionalTags.Add(tag);
+        }
 
-            other.ConditionalTags.ToList().ForEach(t => ConditionalTags.Add(t));
+        public void RemoveConditionalTag(ModifierTag tag)
+        {
+            ConditionalTags = ConditionalTags.Remove(tag);
         }
 
         /// <summary>
-        /// Deep-clones this.
+        /// Creates a deep-clone.
         /// </summary>
         /// <returns></returns>
-        public AllStats Copy()
+        public Stats Clone()
         {
-            AllStats copy = new();
+            Stats copy = new();
+            copy.ConditionalTags = ConditionalTags;
             copy.IntelligenceScaleFactor = IntelligenceScaleFactor;
-            copy.FlatAttackDamage.Combine(FlatAttackDamage);
-            copy.FlatAbilityDamage.Combine(FlatAbilityDamage);
-            copy.IncreasedDamageMeleePercent.Combine(IncreasedDamageMeleePercent);
-            copy.IncreasedDamageRangedPercent.Combine(IncreasedDamageRangedPercent);
-            copy.IncreasedDamageMagicPercent.Combine(IncreasedDamageMagicPercent);
-            copy.MoreDamagePercent.Combine(MoreDamagePercent);
-            copy.Health.Combine(Health);
-            copy.Defense.Combine(Defense);
-            copy.TrueDefense.Combine(TrueDefense);
-            copy.Speed.Combine(Speed);
-            copy.Strength.Combine(Strength);
-            copy.Intelligence.Combine(Intelligence);
-            copy.CritChancePercent.Combine(CritChancePercent);
-            copy.CritDamagePercent.Combine(CritDamagePercent);
-            copy.AttackSpeedPercent.Combine(AttackSpeedPercent);
-            copy.Ferocity.Combine(Ferocity);
-            copy.AbilityDamagePercent.Combine(AbilityDamagePercent);
-            copy.MagicFind.Combine(MagicFind);
-            copy.PetLuck.Combine(PetLuck);
-            copy.SeaCreatureChance.Combine(SeaCreatureChance);
-
-            ConditionalTags.ToList().ForEach(t => copy.ConditionalTags.Add(t));
-
+            copy.FlatAttackDamage = FlatAttackDamage.Clone();
+            copy.FlatAbilityDamage = FlatAbilityDamage.Clone();
+            copy.IncreasedDamageMeleePercent = IncreasedDamageMeleePercent.Clone();
+            copy.IncreasedDamageRangedPercent = IncreasedDamageRangedPercent.Clone();
+            copy.IncreasedDamageMagicPercent = IncreasedDamageMagicPercent.Clone();
+            copy.MoreDamagePercent = MoreDamagePercent.Clone();
+            copy.Health = Health.Clone();
+            copy.Defense = Defense.Clone();
+            copy.TrueDefense = TrueDefense.Clone();
+            copy.Speed = Speed.Clone();
+            copy.Strength = Strength.Clone();
+            copy.Intelligence = Intelligence.Clone();
+            copy.CritChancePercent = CritChancePercent.Clone();
+            copy.CritDamagePercent = CritDamagePercent.Clone();
+            copy.AttackSpeedPercent = AttackSpeedPercent.Clone();
+            copy.Ferocity = Ferocity.Clone();
+            copy.AbilityDamagePercent = AbilityDamagePercent.Clone();
+            copy.MagicFind = MagicFind.Clone();
+            copy.PetLuck = PetLuck.Clone();
+            copy.SeaCreatureChance = SeaCreatureChance.Clone();
             return copy;
         }
-
+        
     }
 
 }

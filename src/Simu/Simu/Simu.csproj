@@ -18,8 +18,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Pages\SheetCategories\" />
     <Folder Include="wwwroot\fonts\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Simu.Common\Simu.Common.csproj" />
+    <ProjectReference Include="..\Simu.Logic\Simu.Logic.csproj" />
   </ItemGroup>
 
 </Project>

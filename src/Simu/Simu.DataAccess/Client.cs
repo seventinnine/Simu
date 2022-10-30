@@ -32,7 +32,7 @@ namespace Simu.APICLient
                 Console.WriteLine(reader.ReadAsTag());
             }
             */
-            AllStats stats1 = new();
+            Stats stats1 = new();
             stats1.Strength.BaseStats.Add("base", 50);
             stats1.Strength.AdditiveMultipliers.Add("nice", 20);
             stats1.Strength.AdditiveMultipliers.Add("cock", 30);
@@ -40,13 +40,15 @@ namespace Simu.APICLient
             stats1.Strength.UnscalableStats.Add("bestiary", 50);
             stats1.FlatAttackDamage.BaseStats.Add("weapon", 195);
             stats1.CritChancePercent.BaseStats.Add("base", 50.0m);
-            stats1.CritDamagePercent.BaseStats.Add("base", 50.0m);
-            //AllStats stats2 = stats1.Copy();
+            stats1.CritDamagePercent.BaseStats.Add("base", 50.0m, ModifierTag.Cubism);
 
-            //stats1.MergeWith(stats2);
+            stats1.AddConditionalTag(ModifierTag.Cubism);
+            stats1.RemoveConditionalTag(ModifierTag.Cubism);
+            StatsCalculator calc = new(stats1, AttackMode.Melee);
 
-            Console.WriteLine(stats1.Strength.CalculateTotal(new List<ModifierTag>() { ModifierTag.Cubism}));
-            Console.WriteLine(DamageCalculator.CalculateAverageDamagePerHit(stats1, AttackMode.Melee));
+
+            Console.WriteLine(stats1.Strength.CalculateTotal(ModifierTag.Cubism | ModifierTag.None));
+            Console.WriteLine(calc.CalculateAverageDamagePerHit());
 
         }
     }

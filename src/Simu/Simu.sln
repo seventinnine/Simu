@@ -7,7 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Simu", "Simu\Simu.csproj", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Simu.APIClient", "Simu.DataAccess\Simu.APIClient.csproj", "{1045F448-02BC-4EC8-B4CD-8FFE1AEB2C40}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Simu.Common", "Simu.Common\Simu.Common.csproj", "{D8B8F58E-7CA6-4A2E-AB75-98EFE136618C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Simu.Common", "Simu.Common\Simu.Common.csproj", "{D8B8F58E-7CA6-4A2E-AB75-98EFE136618C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Simu.Logic", "Simu.Logic\Simu.Logic.csproj", "{05D46AFB-F4D0-4CF6-9F30-14F812B9BE27}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{D8B8F58E-7CA6-4A2E-AB75-98EFE136618C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D8B8F58E-7CA6-4A2E-AB75-98EFE136618C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D8B8F58E-7CA6-4A2E-AB75-98EFE136618C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{05D46AFB-F4D0-4CF6-9F30-14F812B9BE27}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05D46AFB-F4D0-4CF6-9F30-14F812B9BE27}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05D46AFB-F4D0-4CF6-9F30-14F812B9BE27}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{05D46AFB-F4D0-4CF6-9F30-14F812B9BE27}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
