@@ -14,8 +14,11 @@ namespace Simu.Common
         public decimal Value { get; set; }
         public ModifierTag RequiredTags { get; set; }
         public decimal LocalMultiplier { get; set; } = 1.0m;
-        public char Unit { get; set; }
+        public string Unit { get; set; } = string.Empty;
+        public Modifier()
+        {
 
+        }
         public Modifier(string iD, decimal value)
         {
             ID = iD;
@@ -28,7 +31,7 @@ namespace Simu.Common
             Value = value;
             RequiredTags = requiredTags;
         }
-        public Modifier(string iD, decimal value, ModifierTag requiredTags, decimal localMultiplier, char unit)
+        public Modifier(string iD, decimal value, ModifierTag requiredTags, decimal localMultiplier, string unit)
         {
             ID = iD;
             Value = value;
@@ -40,9 +43,9 @@ namespace Simu.Common
         public override string ToString()
         {
             if (RequiredTags != ModifierTag.None)
-                return $"{ID}{Unit}";
+                return $"{ID} {Unit}";
             else
-                return $"{Value}{Unit} ({ID} ({RequiredTags /*.Select(e => e.ToString()).Aggregate((l, r) => $"{l}, {r}")*/}))";
+                return $"{Value} {Unit} ({ID} ({RequiredTags /*.Select(e => e.ToString()).Aggregate((l, r) => $"{l}, {r}")*/}))";
         }
 
         public object Clone()
@@ -62,6 +65,9 @@ namespace Simu.Common
         private ModifierTag _lastUsedTagsSum;
         private decimal _cachedValueSum;
         private bool _cacheValidSum = false;
+
+        public decimal ValueSum { get => _cachedValueSum; }
+        public decimal ValueProduct { get => _cachedValueProduct; }
 
         public OnPropertyChanged? OnCacheInvalidated { get; set; }
         private Dictionary<string, Modifier> modifiers { get; set; } = new();
@@ -168,20 +174,44 @@ namespace Simu.Common
         /// <returns></returns>
         public decimal ProductForMatchingTags(ModifierTag tags)
         {
-            if (_cacheValidProduct && _lastUsedTagsProduct.IsSubsetOf(tags)) return _cachedValueProduct;
+            if (_cacheValidProduct && _lastUsedTagsProduct.IsEqualTo(tags)) return _cachedValueProduct;
             decimal product = 1.0m;
             foreach (var pair in modifiers)
             {
-                if (!pair.Value.RequiredTags.IsSubsetOf(tags))
+                if (pair.Value.RequiredTags.IsSubsetOf(tags))
                 {
-                    product *= (1.0m + (pair.Value.Value * pair.Value.LocalMultiplier) / 100.0m);
+                    product *= 1.0m + (pair.Value.Value * pair.Value.LocalMultiplier) / 100.0m;
                 }
             }
             _lastUsedTagsProduct = tags;
             _cacheValidProduct = true;
             _cachedValueProduct = product - 1.0m;
-            return product - 1.0m;
+            return _cachedValueProduct;
         }
+
+        /// <summary>
+        /// Calculates the inverse product of <see cref="Modifier"/>s in <see cref="ModifierList"/>.
+        /// <paramref name="tags"/> are provided for conditional <see cref="Modifier"/>s.
+        /// </summary>
+        /// <param name="tags"></param>
+        /// <returns></returns>
+        public decimal InverseProductForMatchingTags(ModifierTag tags)
+        {
+            if (_cacheValidProduct && _lastUsedTagsProduct.IsEqualTo(tags)) return _cachedValueProduct;
+            decimal product = 1.0m;
+            foreach (var pair in modifiers)
+            {
+                if (pair.Value.RequiredTags.IsSubsetOf(tags))
+                {
+                    product *= 1.0m - (pair.Value.Value * pair.Value.LocalMultiplier) / 100.0m;
+                }
+            }
+            _lastUsedTagsProduct = tags;
+            _cacheValidProduct = true;
+            _cachedValueProduct = 1.0m - product;
+            return _cachedValueProduct;
+        }
+
         /// <summary>
         /// Calculates the big S (Sum of all) of <see cref="Modifier"/>s in <see cref="ModifierList"/>.
         /// <paramref name="tags"/> are provided for conditional <see cref="Modifier"/>s.
@@ -190,13 +220,13 @@ namespace Simu.Common
         /// <returns></returns>
         public decimal SumForMatchingTags(ModifierTag tags)
         {
-            if (_cacheValidSum && _lastUsedTagsSum.IsSubsetOf(tags)) return _cachedValueSum;
+            if (_cacheValidSum && _lastUsedTagsSum.IsEqualTo(tags)) return _cachedValueSum;
             decimal sum = 0.0m;
             foreach (var pair in modifiers)
             {
                 if (pair.Value.RequiredTags.IsSubsetOf(tags))
                 {
-                    sum += (pair.Value.Value * pair.Value.LocalMultiplier);
+                    sum += pair.Value.Value * pair.Value.LocalMultiplier;
                 }
             }
             _lastUsedTagsSum = tags;
@@ -231,6 +261,12 @@ namespace Simu.Common
         private decimal _cachedValue;
         private decimal _cachedValueUncapped;
         private bool _cacheValid;
+        private bool _isMultiplierOnly;
+
+        /// <summary>
+        /// Minimum value.
+        /// </summary>
+        public decimal MinValue { get; }
 
         /// <summary>
         /// Optional default cap.
@@ -284,7 +320,7 @@ namespace Simu.Common
         /// </summary>
         public decimal TotalUncapped { get => _cachedValueUncapped; }
 
-        public Stat(decimal? defaultCap = null)
+        public Stat(decimal? defaultCap = null, decimal minValue = 0)
         {
             BaseStats = new();
             BaseStats.OnCacheInvalidated += InvalidateCache;
@@ -296,8 +332,15 @@ namespace Simu.Common
             MultiplicativeMultipliers.OnCacheInvalidated += InvalidateCache;
             this.DefaultCap = defaultCap;
             _cacheValid = false;
+            MinValue = minValue;
+            _isMultiplierOnly = false;
         }
-            
+
+        public Stat(bool isMultiplier) : this(null, 0)
+        {
+            _isMultiplierOnly = isMultiplier;
+        }
+
         private void InvalidateCache()
         {
             _cacheValid = false;
@@ -316,7 +359,7 @@ namespace Simu.Common
             cpy.AdditiveMultipliers = AdditiveMultipliers.Clone();
             cpy.MultiplicativeMultipliers = MultiplicativeMultipliers.Clone();
             return cpy;
-        }        
+        }
 
         /// <summary>
         /// Calculates the total of all <see cref="ModifierList"/>s with respect to their semantics.
@@ -334,12 +377,14 @@ namespace Simu.Common
             decimal productMultiplicative = MultiplicativeMultipliers.ProductForMatchingTags(tags);
             decimal sumUnscalable = UnscalableStats.SumForMatchingTags(tags);
 
-            decimal total = (sumBase * (1.0m + sumAdditive) * (1.0m + productMultiplicative)) + sumUnscalable;
+            decimal total = !_isMultiplierOnly
+                ? sumBase * (1.0m + sumAdditive) * (1.0m + productMultiplicative) + sumUnscalable
+                : (1.0m + sumAdditive) * (1.0m + productMultiplicative);
 
             // handle modified cap
             decimal? capToUse = ModifiedCap ?? DefaultCap ?? null;
 
-            decimal result = capToUse is null ? total : Math.Min(total, capToUse.Value);
+            decimal result = capToUse is null ? total : Math.Max(Math.Min(total, capToUse.Value), MinValue);
 
             // cache result
             _cachedValueUncapped = total;
@@ -361,22 +406,30 @@ namespace Simu.Common
         public ModifierTag ConditionalTags { get; private set; } = ModifierTag.None;
 
         public decimal IntelligenceScaleFactor { get; set; }
-        
+
+        public decimal AbilityCooldown { get; set; } = 1.0m;
+
+        public Modifier DungeoneeringDungeonizedMultiplier { get; set; } = new();
+
         #region Stats
 
         public Stat FlatAttackDamage { get; private set; } = new();
 
         public Stat FlatAbilityDamage { get; private set;  } = new();
 
-        public Stat IncreasedDamageMeleePercent { get; private set; } = new();
+        //TODO: change multipliers to just modifierlists?
+        
+        public ModifierList IncreasedDamageMeleePercent { get; private set; } = new();
 
-        public Stat IncreasedDamageRangedPercent { get; private set;  } = new();
+        public ModifierList IncreasedDamageRangedPercent { get; private set;  } = new();
 
-        public Stat IncreasedDamageMagicPercent { get; private set;  } = new();
+        public ModifierList IncreasedDamageMagicPercent { get; private set;  } = new();
 
-        public Stat MoreDamagePercent { get; private set;  } = new();
+        public ModifierList MoreDamagePercent { get; private set;  } = new();
 
-        public Stat Health { get; private set;  } = new();
+        public Stat Health { get; private set; } = new();
+
+        public decimal Mana { get => Intelligence.Total + 100; }
 
         public Stat Defense { get; private set;  } = new();
 
@@ -402,9 +455,25 @@ namespace Simu.Common
 
         public Stat PetLuck { get; private set;  } = new();
 
-        public Stat SeaCreatureChance { get; private set;  } = new(100.0m);
+        public Stat SeaCreatureChance { get; private set; } = new(100.0m);
+        public ModifierList DamageReductionPercent { get; private set; } = new();
 
         #endregion
+
+        public Stats()
+        {
+            
+        }
+
+        public void AddBaseStats()
+        {
+            FlatAttackDamage.BaseStats.Add("Base", 5.0m);
+            Health.BaseStats.Add("Base", 100.0m);
+            Speed.BaseStats.Add("Base", 100.0m);
+            CritChancePercent.BaseStats.Add("Base", 30.0m);
+            CritDamagePercent.BaseStats.Add("Base", 50.0m);
+            SeaCreatureChance.BaseStats.Add("Base", 20.0m);
+        }
 
         public void AddConditionalTag(ModifierTag tag)
         {
@@ -425,6 +494,8 @@ namespace Simu.Common
             Stats copy = new();
             copy.ConditionalTags = ConditionalTags;
             copy.IntelligenceScaleFactor = IntelligenceScaleFactor;
+            copy.AbilityCooldown = AbilityCooldown;
+            copy.DungeoneeringDungeonizedMultiplier = (Modifier)DungeoneeringDungeonizedMultiplier.Clone();
             copy.FlatAttackDamage = FlatAttackDamage.Clone();
             copy.FlatAbilityDamage = FlatAbilityDamage.Clone();
             copy.IncreasedDamageMeleePercent = IncreasedDamageMeleePercent.Clone();
@@ -445,6 +516,7 @@ namespace Simu.Common
             copy.MagicFind = MagicFind.Clone();
             copy.PetLuck = PetLuck.Clone();
             copy.SeaCreatureChance = SeaCreatureChance.Clone();
+            copy.DamageReductionPercent = DamageReductionPercent.Clone();
             return copy;
         }
         

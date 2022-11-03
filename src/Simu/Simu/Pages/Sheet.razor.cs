@@ -27,6 +27,7 @@ namespace Simu.Pages
         {
             Mode = AttackMode.Melee;
             Stats = new();
+            Stats.AddBaseStats();
             Calculator = new(Stats, Mode);
         }
         public Sheet Clone()

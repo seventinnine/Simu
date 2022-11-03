@@ -30,14 +30,10 @@ namespace Simu.Pages.SheetCategories
         [Inject]
         protected ProfileLogic _logic { get; set; } = default!;
 
-        public ProfileModel ProfileData { get; set; }
+        public ProfileModel ProfileData { get; set; } = default!;
         private EditContext? context;
 
         private bool _isInitialized = false;
-
-        public Profile()
-        {
-        }
 
         protected override void OnInitialized()
         {
@@ -62,14 +58,9 @@ namespace Simu.Pages.SheetCategories
         {
             if (_isInitialized)
             {
-                Console.WriteLine("submitted: " + ProfileData.SkyblockLevel);
                 OnStatsChanged.InvokeAsync();
             }
         }
 
-        public void Focus()
-        {
-            Console.WriteLine("lost focus");
-        }
     }
 }

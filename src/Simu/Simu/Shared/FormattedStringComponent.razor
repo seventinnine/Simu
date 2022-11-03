@@ -1,0 +1,14 @@
+﻿@using Simu.Common
+
+@foreach (var item in Strings!)
+{
+    <span class="@CssClass" style="@FormattedStringConverter.AsFormattedString(item)">@item.Content</span>
+}
+
+@code {
+    [Parameter]
+    public string? CssClass { get; set; } = string.Empty;
+
+    [Parameter]
+    public IEnumerable<FormattedString>? Strings { get; set; }
+}

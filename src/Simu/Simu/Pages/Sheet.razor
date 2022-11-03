@@ -5,7 +5,7 @@
 
 <Simu.Pages.SheetCategories.Profile AllStats="Stats" OnStatsChanged="RecalculateDamage"/>
 
-
+<!--
 <h1>Accessories</h1>
 
 <h2># Magical Power</h2>
@@ -52,23 +52,74 @@
 
 <h1>(near the final damage section/breakdown) mode (melee/ranged/magic)</h1>
 
+-->
 <div>
     Total Values:
     <br />
     Health: 
-    <span>@Stats.Health.Total 
-        @if(Stats.Health.Total != Stats.Health.TotalUncapped) 
-        {
-            <span> (@Stats.Health.TotalUncapped.ToString("N2"))</span>
-        }
+    <span>@Stats.Health.Total.ToString("N2") 
+
     </span>
-    <br />
+    <br/>
+    Defense: 
+    <span>@Stats.Defense.Total.ToString("N2") 
+
+    </span>
+    <br/>
+    True Defense: 
+    <span>@Stats.TrueDefense.Total.ToString("N2") 
+
+    </span>
+    <br/>
     Strength: 
-    <span>@Stats.Strength.Total 
-        @if(Stats.Strength.Total != Stats.Strength.TotalUncapped) 
+    <span>@Stats.Strength.Total.ToString("N2") 
+
+    </span>
+    <br/>
+    Intelligence: 
+    <span>@Stats.Intelligence.Total.ToString("N2") 
+
+    </span>
+    <br/>
+    Crit Chance: 
+    <span>@Stats.CritChancePercent.Total.ToString("N2") %
+        @if(Stats.CritChancePercent.Total != Stats.CritChancePercent.TotalUncapped) 
         {
-            <span> (@Stats.Strength.TotalUncapped.ToString("N2"))</span>
+            <span> (@Stats.CritChancePercent.TotalUncapped.ToString("N2") %)</span>
         }
     </span>
+    <br/>
+    Increased Damage: 
+    <span>@(Stats.IncreasedDamageMeleePercent.ValueProduct.ToString("P2")) 
+
+    </span>
+    <br/>
+    Damage Per Hit: 
+    <span>@(Calculator.CalculateAverageDamagePerHit().ToString("N2")) 
+        
+    </span>
+    <br/>
+    Attack Speed: 
+    <span>@(Stats.AttackSpeedPercent.Total.ToString("N2")) %
+        @if(Stats.AttackSpeedPercent.Total != Stats.AttackSpeedPercent.TotalUncapped) 
+        {
+            <span> (@Stats.AttackSpeedPercent.TotalUncapped.ToString("N2") %)</span>
+        }
+    </span>
+    <br/>
+    Ferocity: 
+    <span>@(Stats.Ferocity.Total.ToString("N2"))</span>
+    <br/>
+    Damage Per Second: 
+    <span>@(Calculator.CalculateDamagePerSecond().ToString("N2"))</span>
+    <br/>
+    Magic Find: 
+    <span>@(Stats.MagicFind.Total.ToString("N2"))</span>
+    <br/>
+    Pet Luck:
+    <span>@(Stats.PetLuck.Total.ToString("N2"))</span>
+    <br/>
+    Dungeonized Bonus:
+    <span>@(Stats.DungeoneeringDungeonizedMultiplier.Value.ToString("N2")) %</span>
 
 </div>

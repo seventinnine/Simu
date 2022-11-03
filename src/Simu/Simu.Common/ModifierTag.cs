@@ -48,7 +48,12 @@ namespace Simu.Common
 
         public static bool IsSubsetOf(this ModifierTag current, ModifierTag other)
         {
-            return (current & other) == current;
+            return (current & other) == current || current == ModifierTag.None;
+        }
+
+        public static bool IsEqualTo(this ModifierTag current, ModifierTag other)
+        {
+            return (current & other) == current && (current & other) == other;
         }
 
     }

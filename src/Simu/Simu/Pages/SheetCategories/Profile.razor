@@ -1,4 +1,6 @@
-﻿
+﻿@using Simu.Common
+@using Simu.Common.Constants
+
 
 <h1>Profile-Specific-Stuff</h1>
 
@@ -8,38 +10,151 @@
 <div class="container">
     <div class="form">
         <h2>Skyblock Level</h2>
-        <!--
-
-        <label>
-            Skyblock Level:
-            <input type="number" value="@ProfileData.SkyblockLevel" @oninput="args => ProfileData.SetSkyblockLevel(args.Value!.ToString()!)"/>
-            
-        </label>
-        -->
-        <label>
-            Skyblock Level:
-            <InputNumber @bind-Value="ProfileData.SkyblockLevel"/>
-            <ValidationMessage DisplayName="Skyblock Level" For="@(() => ProfileData.SkyblockLevel)" />
-        </label>
-
-        <button type="submit" class="btn btn-primary">Submit</button>
-
+        <div class="row">
+            <div class="m-1 col-2">
+                <InputNumber @bind-Value="ProfileData.SkyblockLevel"/>
+                <ValidationMessage DisplayName="Skyblock Level" For="@(() => ProfileData.SkyblockLevel)"/>
+            </div>
+            <div class="m-1 col-3">
+                    <FormattedStringComponent Strings="@ProfileData.SkyblockLevelBonusFormatted()"/>
+            </div>
+        </div>
     </div>
     <div>
         <h2>Skills</h2>
-        <label>
-            Farming:
-            <InputNumber @bind-Value="ProfileData.Level_Farming"/>
-            <ValidationMessage DisplayName="Farming Level" For="@(() => ProfileData.Level_Farming)" />
-        </label>
-
+        <div>
+            <div class="row">
+                <div class="m-1 col-1">
+                    Farming:
+                </div>
+                <div class="m-1 col-2">
+                    <RadzenCard>
+                        <RadzenText>Farming:</RadzenText>
+                    <!--<InputNumber @bind-Value="ProfileData.Level_Farming"/> -->
+                        <RadzenSlider Min="@ProfileConstants.SKYBLOCK_FARMING_MIN" Max="@ProfileConstants.SKYBLOCK_FARMING_MAX" @bind-Value="ProfileData.Level_Farming"/>
+                        <ValidationMessage DisplayName="Farming Level" For="@(() => ProfileData.Level_Farming)"/> 
+                    </RadzenCard>
+                </div>
+                <div class="m-1 col-3">
+                    <FormattedStringComponent Strings="@ProfileData.FarmingLevelBonusFormatted()"/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="m-1 col-1">
+                    Mining:
+                </div>
+                <div class="m-1 col-2">
+                    <InputNumber @bind-Value="ProfileData.Level_Mining"/>
+                    <ValidationMessage DisplayName="Mining Level" For="@(() => ProfileData. Level_Mining)" />
+                </div>     
+                <div class="m-1 col-3">
+                    <FormattedStringComponent Strings="@ProfileData.MiningLevelBonusFormatted()"/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="m-1 col-1">
+                    Combat:
+                </div>
+                <div class="m-1 col-2">
+                    <InputNumber @bind-Value="ProfileData.Level_Combat"/>
+                    <ValidationMessage DisplayName="Combat Level" For="@(() => ProfileData.Level_Combat)" />
+                </div>     
+                <div class="m-1 col-3">
+                    <FormattedStringComponent Strings="@ProfileData.CombatLevelBonusFormatted()"/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="m-1 col-1">
+                    Foraging:
+                </div>
+                <div class="m-1 col-2">
+                    <InputNumber @bind-Value="ProfileData.Level_Foraging"/>
+                    <ValidationMessage DisplayName="Foraging Level" For="@(() => ProfileData.Level_Foraging)" />
+                </div>     
+                <div class="m-1 col-3">
+                    <FormattedStringComponent Strings="@ProfileData.ForagingLevelBonusFormatted()"/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="m-1 col-1">
+                    Fishing:
+                </div>
+                <div class="m-1 col-2">
+                    <InputNumber @bind-Value="ProfileData.Level_Fishing"/>
+                    <ValidationMessage DisplayName="Fishing Level" For="@(() => ProfileData.Level_Fishing)" />
+                </div>     
+                <div class="m-1 col-3">
+                    <FormattedStringComponent Strings="@ProfileData.FishingLevelBonusFormatted()"/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="m-1 col-1">
+                    Enchanting:
+                </div>
+                <div class="m-1 col-2">
+                    <InputNumber @bind-Value="ProfileData.Level_Enchanting"/>
+                    <ValidationMessage DisplayName="Enchanting Level" For="@(() => ProfileData.Level_Enchanting)" />
+                </div>     
+                <div class="m-1 col-3">
+                    <FormattedStringComponent Strings="@ProfileData.EnchantingLevelBonusFormatted()"/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="m-1 col-1">
+                    Alchemy:
+                </div>
+                <div class="m-1 col-2">
+                    <InputNumber @bind-Value="ProfileData.Level_Alchemy"/>
+                    <ValidationMessage DisplayName="Alchemy Level" For="@(() => ProfileData.Level_Alchemy)" />
+                </div>     
+                <div class="m-1 col-3">
+                    <FormattedStringComponent Strings="@ProfileData.AlchemyLevelBonusFormatted()"/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="m-1 col-1">
+                    Carpenty:
+                </div>
+                <div class="m-1 col-2">
+                    <InputNumber @bind-Value="ProfileData.Level_Carpentry"/>
+                    <ValidationMessage DisplayName="Carpenty Level" For="@(() => ProfileData.Level_Carpentry)" />
+                </div>     
+                <div class="m-1 col-3">
+                    <FormattedStringComponent Strings="@ProfileData.CarpentryLevelBonusFormatted()"/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="m-1 col-1">
+                    Taming:
+                </div>
+                <div class="m-1 col-2">
+                    <InputNumber @bind-Value="ProfileData.Level_Taming"/>
+                    <ValidationMessage DisplayName="Taming Level" For="@(() => ProfileData.Level_Taming)" />
+                </div>     
+                <div class="m-1 col-3">
+                    <FormattedStringComponent Strings="@ProfileData.TamingLevelBonusFormatted()"/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="m-1 col-1">
+                    Dungeoneering:
+                </div>
+                <div class="m-1 col-2">
+                    <InputNumber @bind-Value="ProfileData.Level_Dungeoneering"/>
+                    <ValidationMessage DisplayName="Dungeoneering Level" For="@(() => ProfileData.Level_Dungeoneering)" />
+                </div>     
+                <div class="m-1 col-3">
+                    <FormattedStringComponent Strings="@ProfileData.DungeoneeringLevelBonusFormatted()"/>
+                </div>
+            </div>
+        </div>
     </div>
+    
 
+    <button type="submit" class="btn btn-primary">Submit</button>
 </div>
 </EditForm>
 
-
-<h2>Skills (enchanting, alchemy, foraging)</h2>
 
 <h2>melody</h2>
 

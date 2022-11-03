@@ -41,6 +41,8 @@ namespace Simu.APICLient
             stats1.FlatAttackDamage.BaseStats.Add("weapon", 195);
             stats1.CritChancePercent.BaseStats.Add("base", 50.0m);
             stats1.CritDamagePercent.BaseStats.Add("base", 50.0m, ModifierTag.Cubism);
+            stats1.DamageReductionPercent.Add("Base", 50.0m);
+            stats1.DamageReductionPercent.Add("Enderman", 50.0m, ModifierTag.Ender);
 
             stats1.AddConditionalTag(ModifierTag.Cubism);
             stats1.RemoveConditionalTag(ModifierTag.Cubism);
@@ -48,6 +50,8 @@ namespace Simu.APICLient
 
 
             Console.WriteLine(stats1.Strength.CalculateTotal(ModifierTag.Cubism | ModifierTag.None));
+            Console.WriteLine(stats1.DamageReductionPercent.InverseProductForMatchingTags(ModifierTag.Cubism | ModifierTag.None));
+            Console.WriteLine(stats1.DamageReductionPercent.InverseProductForMatchingTags(ModifierTag.Ender | ModifierTag.Cubism | ModifierTag.None));
             Console.WriteLine(calc.CalculateAverageDamagePerHit());
 
         }
