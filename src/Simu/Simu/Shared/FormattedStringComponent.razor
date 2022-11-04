@@ -2,7 +2,14 @@
 
 @foreach (var item in Strings!)
 {
-    <span class="@CssClass" style="@FormattedStringConverter.AsFormattedString(item)">@item.Content</span>
+    @if(item.IsNewline)
+    {
+        <br/>
+    }
+    else
+    {
+        <span class="@CssClass" style="@FormattedStringConverter.AsFormattedString(item)">@item.Content</span>
+    }
 }
 
 @code {

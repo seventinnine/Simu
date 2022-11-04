@@ -64,10 +64,10 @@ namespace Simu.Common
             //TODO: move to Stats
             AllStats.FlatAttackDamage.CalculateTotal(AllStats.ConditionalTags);
             AllStats.FlatAbilityDamage.CalculateTotal(AllStats.ConditionalTags);
-            AllStats.IncreasedDamageMeleePercent.ProductForMatchingTags(AllStats.ConditionalTags);
-            AllStats.IncreasedDamageRangedPercent.ProductForMatchingTags(AllStats.ConditionalTags);
-            AllStats.IncreasedDamageMagicPercent.ProductForMatchingTags(AllStats.ConditionalTags);
-            AllStats.MoreDamagePercent.ProductForMatchingTags(AllStats.ConditionalTags);
+            AllStats.IncreasedDamageMeleePercent.CalculateTotal(AllStats.ConditionalTags);
+            AllStats.IncreasedDamageRangedPercent.CalculateTotal(AllStats.ConditionalTags);
+            AllStats.IncreasedDamageMagicPercent.CalculateTotal(AllStats.ConditionalTags);
+            AllStats.MoreDamagePercent.CalculateTotal(AllStats.ConditionalTags);
             AllStats.Health.CalculateTotal(AllStats.ConditionalTags);
             AllStats.Defense.CalculateTotal(AllStats.ConditionalTags);
             AllStats.TrueDefense.CalculateTotal(AllStats.ConditionalTags);
@@ -82,7 +82,7 @@ namespace Simu.Common
             AllStats.MagicFind.CalculateTotal(AllStats.ConditionalTags);
             AllStats.PetLuck.CalculateTotal(AllStats.ConditionalTags);
             AllStats.SeaCreatureChance.CalculateTotal(AllStats.ConditionalTags);
-            AllStats.DamageReductionPercent.InverseProductForMatchingTags(AllStats.ConditionalTags);
+            AllStats.DamageReductionPercent.CalculateTotal(AllStats.ConditionalTags);
         }
 
         /// <summary>
@@ -97,8 +97,8 @@ namespace Simu.Common
                 decimal strengthMultiplier = 1.0m + AllStats.Strength.CalculateTotal(AllStats.ConditionalTags) / 100.0m;
                 decimal critChance = Math.Min(AllStats.CritChancePercent.CalculateTotal(AllStats.ConditionalTags) / 100.0m, 1.0m);
                 decimal critDamageMuliplier = 1.0m + AllStats.CritDamagePercent.CalculateTotal(AllStats.ConditionalTags) / 100.0m;
-                decimal increasedDamageMultiplier = 1.0m + AllStats.IncreasedDamageMeleePercent.ProductForMatchingTags(AllStats.ConditionalTags);
-                decimal moreDamageMultiplier = 1.0m + AllStats.MoreDamagePercent.ProductForMatchingTags(AllStats.ConditionalTags);
+                decimal increasedDamageMultiplier = 1.0m + AllStats.IncreasedDamageMeleePercent.CalculateTotal(AllStats.ConditionalTags) / 100.0m;
+                decimal moreDamageMultiplier = 1.0m + AllStats.MoreDamagePercent.CalculateTotal(AllStats.ConditionalTags);
                 //TODO: fabled
 
                 return baseDamage * strengthMultiplier * (critDamageMuliplier * critChance + (1.0m - critChance)) * increasedDamageMultiplier * moreDamageMultiplier; 
@@ -109,8 +109,8 @@ namespace Simu.Common
                 decimal strengthMultiplier = 1.0m + AllStats.Strength.CalculateTotal(AllStats.ConditionalTags) / 100.0m;
                 decimal critChance = Math.Min(AllStats.CritChancePercent.CalculateTotal(AllStats.ConditionalTags) / 100.0m, 1.0m);
                 decimal critDamageMuliplier = 1.0m + AllStats.CritDamagePercent.CalculateTotal(AllStats.ConditionalTags) / 100.0m;
-                decimal increasedDamageMultiplier = 1.0m + AllStats.IncreasedDamageRangedPercent.ProductForMatchingTags(AllStats.ConditionalTags);
-                decimal moreDamageMultiplier = 1.0m + AllStats.MoreDamagePercent.ProductForMatchingTags(AllStats.ConditionalTags);
+                decimal increasedDamageMultiplier = 1.0m + AllStats.IncreasedDamageRangedPercent.CalculateTotal(AllStats.ConditionalTags) / 100.0m;
+                decimal moreDamageMultiplier = 1.0m + AllStats.MoreDamagePercent.CalculateTotal(AllStats.ConditionalTags);
                 return baseDamage * strengthMultiplier * (critDamageMuliplier * critChance + (1.0m - critChance)) * increasedDamageMultiplier * moreDamageMultiplier;
             }
             else if (AttackMode == AttackMode.Magic)
@@ -118,8 +118,8 @@ namespace Simu.Common
                 decimal baseDamage = AllStats.FlatAbilityDamage.CalculateTotal(AllStats.ConditionalTags) + 5.0m;
                 decimal intelligenceMultiplier = (AllStats.Intelligence.CalculateTotal(AllStats.ConditionalTags) / 100.0m) * AllStats.IntelligenceScaleFactor;
                 decimal abilityDamageMultiplier = 1.0m + AllStats.AbilityDamagePercent.CalculateTotal(AllStats.ConditionalTags) / 100.0m;
-                decimal increasedDamageMultiplier = 1.0m + AllStats.IncreasedDamageMagicPercent.ProductForMatchingTags(AllStats.ConditionalTags);
-                decimal moreDamageMultiplier = 1.0m + AllStats.MoreDamagePercent.ProductForMatchingTags(AllStats.ConditionalTags);
+                decimal increasedDamageMultiplier = 1.0m + AllStats.IncreasedDamageMagicPercent.CalculateTotal(AllStats.ConditionalTags) / 100.0m;
+                decimal moreDamageMultiplier = 1.0m + AllStats.MoreDamagePercent.CalculateTotal(AllStats.ConditionalTags);
                 return baseDamage * intelligenceMultiplier * abilityDamageMultiplier * increasedDamageMultiplier * moreDamageMultiplier;
             }
             else

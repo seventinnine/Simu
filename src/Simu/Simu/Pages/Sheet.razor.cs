@@ -14,13 +14,20 @@ using Microsoft.JSInterop;
 using Simu;
 using Simu.Shared;
 using Simu.Common;
+using Simu.Models;
+using Simu.Logic;
 
 namespace Simu.Pages
 {
     public partial class Sheet
     {
-        public StatsCalculator Calculator { get; set; }
+        #region Models
+        public ProfileModel ProfileData { get; set; }
+
+        #endregion
+        
         public Stats Stats { get; set; }
+        public StatsCalculator Calculator { get; set; }
         public AttackMode Mode { get; set; }
 
         public Sheet()
@@ -29,11 +36,25 @@ namespace Simu.Pages
             Stats = new();
             Stats.AddBaseStats();
             Calculator = new(Stats, Mode);
+
+            #region Create Models
+
+            ProfileData = new(Stats);
+            #endregion
         }
+
+        protected override void OnInitialized()
+        {
+            #region MyRegion
+
+            #endregion
+        }
+
         public Sheet Clone()
         {
             Sheet cpy = new Sheet() { Stats = Stats.Clone(), Mode = Mode};
             cpy.Calculator = new StatsCalculator(cpy.Stats, Mode);
+            cpy.ProfileData = ProfileData.Clone(cpy.Stats);
             return cpy;
         }
 

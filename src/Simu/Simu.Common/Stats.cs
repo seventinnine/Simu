@@ -8,13 +8,30 @@ namespace Simu.Common
     /// Has a (per <see cref="ModifierList"/>) unique <see cref="ID"/> (for later removal from the calculation).
     /// If this modifier should only apply under certain conditions, <see cref="RequiredTags"/> specifies which <see cref="ModifierTag"/>s must currently be selected for the calculation.
     /// </summary>
-    public class Modifier : ICloneable
+    public class Modifier
     {
         public string ID { get; set; } = string.Empty;
-        public decimal Value { get; set; }
+        private decimal _value;
+        public decimal Value { get => _value; set => SetValue(value); }
+
+        private void SetValue(decimal newValue)
+        {
+            if (_value != newValue)
+            {
+                _value = newValue;
+                // invalidate cache of owning modifier
+                RefToModifierList?.InvalidateCaches();
+            }
+        }
+
         public ModifierTag RequiredTags { get; set; }
         public decimal LocalMultiplier { get; set; } = 1.0m;
         public string Unit { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Reference to owning <see cref="ModifierList"/>.
+        /// </summary>
+        public ModifierList? RefToModifierList { get; set; }
         public Modifier()
         {
 
@@ -48,204 +65,76 @@ namespace Simu.Common
                 return $"{Value} {Unit} ({ID} ({RequiredTags /*.Select(e => e.ToString()).Aggregate((l, r) => $"{l}, {r}")*/}))";
         }
 
-        public object Clone()
+        public Modifier Clone(ModifierList? refToModifierList = null)
         {
-            return new Modifier(ID, Value, RequiredTags, LocalMultiplier, Unit);
-        }
-    }
-
-    /// <summary>
-    /// Indexable <see cref="Modifier"/>-List (by <see cref="Modifier.ID"/>) with adapater function for adding/removing <see cref="Modifier"/>s.
-    /// </summary>
-    public class ModifierList : IEnumerable<Modifier>
-    {
-        private ModifierTag _lastUsedTagsProduct;
-        private decimal _cachedValueProduct;
-        private bool _cacheValidProduct = false;
-        private ModifierTag _lastUsedTagsSum;
-        private decimal _cachedValueSum;
-        private bool _cacheValidSum = false;
-
-        public decimal ValueSum { get => _cachedValueSum; }
-        public decimal ValueProduct { get => _cachedValueProduct; }
-
-        public OnPropertyChanged? OnCacheInvalidated { get; set; }
-        private Dictionary<string, Modifier> modifiers { get; set; } = new();
-
-        /// <summary>
-        /// Invalidates the cache and notifies its <see cref="ModifierList"/> of the cache being invalidated.
-        /// </summary>
-        private void InvalidateCaches()
-        {
-            _cacheValidProduct = false;
-            _cacheValidSum = false;
-            // invalidate parent caches
-            OnCacheInvalidated?.Invoke();
-        }
-
-        /// <summary>
-        /// Creates a deep-clone.
-        /// </summary>
-        /// <returns></returns>
-        public ModifierList Clone()
-        {
-            ModifierList cpy = new();
-            foreach (var entry in modifiers)
-            {
-                cpy.modifiers.Add(entry.Key, (Modifier)entry.Value.Clone());
-            }
+            Modifier cpy = new(ID, Value, RequiredTags, LocalMultiplier, Unit);
+            cpy.RefToModifierList = refToModifierList;
             return cpy;
         }
-
-        /// <summary>
-        /// Adds <paramref name="modifier"/> to <see cref="ModifierList"/>.
-        /// </summary>
-        /// <param name="modifier"></param>
-        /// <exception cref="ArgumentException"></exception>
-        public void Add(Modifier modifier)
+    }
+       
+    public class SumModifierList : ModifierList
+    {
+        public SumModifierList(Stat? refToStat = null) : base(refToStat)
         {
-            if (modifiers.ContainsKey(modifier.ID)) throw new ArgumentException("Duplicate key not allowed.");
-
-            modifiers[modifier.ID] = modifier;
-            InvalidateCaches();
         }
 
-        /// <summary>
-        /// Adds <paramref name="modifier"/> to <see cref="ModifierList"/>.
-        /// </summary>
-        /// <param name="modifier"></param>
-        /// <exception cref="ArgumentException"></exception>
-        public void Add(string id, decimal value)
+        protected override decimal CalculateTotalImpl(ModifierTag tags)
         {
-            Add(new Modifier(id, value));
-        }
-
-        /// <summary>
-        /// Adds <paramref name="modifier"/> to <see cref="ModifierList"/>.
-        /// </summary>
-        /// <param name="modifier"></param>
-        /// <exception cref="ArgumentException"></exception>
-        public void Add(string id, decimal value, ModifierTag tags)
-        {
-            Add(new Modifier(id, value, tags));
-        }
-
-        /// <summary>
-        /// Removes <paramref name="modifier"/> from <see cref="ModifierList"/>.
-        /// </summary>
-        /// <param name="modifier"></param>
-        /// <exception cref="ArgumentException"></exception>
-        public void Remove(Modifier modifier)
-        {
-            Remove(modifier.ID);
-        }
-
-        /// <summary>
-        /// Removes <paramref name="modifier"/> from <see cref="ModifierList"/>.
-        /// </summary>
-        /// <param name="modifierName"></param>
-        /// <exception cref="ArgumentException"></exception>
-        public void Remove(string modifierName)
-        {
-            if (!modifiers.ContainsKey(modifierName)) throw new ArgumentException("Key does not exist.");
-
-            modifiers.Remove(modifierName);
-            InvalidateCaches();
-        }
-
-        /// <summary>
-        /// Replaces <see cref="Modifier"/> with <paramref name="modifier"/> and forces a cache invalidation.
-        /// </summary>
-        /// <param name="modifier"></param>
-        /// <exception cref="ArgumentException"></exception>
-        public void InvalidateCacheAndReplaceModifier(Modifier modifier)
-        {
-            if (!modifiers.ContainsKey(modifier.ID)) throw new ArgumentException("Key does not exist.");
-
-            modifiers[modifier.ID] = modifier;
-            InvalidateCaches();
-        }
-
-        /// <summary>
-        /// Calculates the big P (Product over all) of <see cref="Modifier"/>s in <see cref="ModifierList"/>.
-        /// <paramref name="tags"/> are provided for conditional <see cref="Modifier"/>s.
-        /// </summary>
-        /// <param name="tags"></param>
-        /// <returns></returns>
-        public decimal ProductForMatchingTags(ModifierTag tags)
-        {
-            if (_cacheValidProduct && _lastUsedTagsProduct.IsEqualTo(tags)) return _cachedValueProduct;
-            decimal product = 1.0m;
-            foreach (var pair in modifiers)
-            {
-                if (pair.Value.RequiredTags.IsSubsetOf(tags))
-                {
-                    product *= 1.0m + (pair.Value.Value * pair.Value.LocalMultiplier) / 100.0m;
-                }
-            }
-            _lastUsedTagsProduct = tags;
-            _cacheValidProduct = true;
-            _cachedValueProduct = product - 1.0m;
-            return _cachedValueProduct;
-        }
-
-        /// <summary>
-        /// Calculates the inverse product of <see cref="Modifier"/>s in <see cref="ModifierList"/>.
-        /// <paramref name="tags"/> are provided for conditional <see cref="Modifier"/>s.
-        /// </summary>
-        /// <param name="tags"></param>
-        /// <returns></returns>
-        public decimal InverseProductForMatchingTags(ModifierTag tags)
-        {
-            if (_cacheValidProduct && _lastUsedTagsProduct.IsEqualTo(tags)) return _cachedValueProduct;
-            decimal product = 1.0m;
-            foreach (var pair in modifiers)
-            {
-                if (pair.Value.RequiredTags.IsSubsetOf(tags))
-                {
-                    product *= 1.0m - (pair.Value.Value * pair.Value.LocalMultiplier) / 100.0m;
-                }
-            }
-            _lastUsedTagsProduct = tags;
-            _cacheValidProduct = true;
-            _cachedValueProduct = 1.0m - product;
-            return _cachedValueProduct;
-        }
-
-        /// <summary>
-        /// Calculates the big S (Sum of all) of <see cref="Modifier"/>s in <see cref="ModifierList"/>.
-        /// <paramref name="tags"/> are provided for conditional <see cref="Modifier"/>s.
-        /// </summary>
-        /// <param name="tags"></param>
-        /// <returns></returns>
-        public decimal SumForMatchingTags(ModifierTag tags)
-        {
-            if (_cacheValidSum && _lastUsedTagsSum.IsEqualTo(tags)) return _cachedValueSum;
             decimal sum = 0.0m;
-            foreach (var pair in modifiers)
+            foreach (var pair in Modifiers)
             {
                 if (pair.Value.RequiredTags.IsSubsetOf(tags))
                 {
                     sum += pair.Value.Value * pair.Value.LocalMultiplier;
                 }
             }
-            _lastUsedTagsSum = tags;
-            _cacheValidSum = true;
-            _cachedValueSum = sum;
             return sum;
         }
 
-        // : IEnumerable<Modifier>
-        public IEnumerator<Modifier> GetEnumerator()
+        public override ModifierList Clone(Stat? refToStat = null)
         {
-            return modifiers.Values.GetEnumerator();
+            ModifierList cpy = new SumModifierList(refToStat);
+            foreach (var entry in Modifiers)
+            {
+                cpy.Modifiers.Add(entry.Key, entry.Value.Clone(cpy));
+            }
+            return cpy;
+        }
+    }
+
+    public class ProductModifierList : ModifierList
+    {
+        private bool _isInverse;
+        public ProductModifierList(Stat? refToStat = null, bool isInverse = false) : base(refToStat)
+        {
+            _isInverse = isInverse;
+        }
+        protected override decimal CalculateTotalImpl(ModifierTag tags)
+        {
+            decimal product = 1.0m;
+            foreach (var pair in Modifiers)
+            {
+                if (pair.Value.RequiredTags.IsSubsetOf(tags))
+                {
+                    var p = (pair.Value.Value * pair.Value.LocalMultiplier) / 100.0m;
+                    product *= _isInverse ? 1.0m - p : 1.0m + p;
+                }
+            }
+            return product;
         }
 
-        // : IEnumerable<Modifier>
-        IEnumerator IEnumerable.GetEnumerator()
+        public override ModifierList Clone(Stat? refToStat = null)
         {
-            return GetEnumerator();
+            ModifierList cpy = new ProductModifierList(refToStat, _isInverse);
+            foreach (var entry in Modifiers)
+            {
+                cpy.Modifiers.Add(entry.Key, entry.Value.Clone(cpy));
+            }
+            return cpy;
+        
         }
+
     }
 
     public delegate void OnPropertyChanged();
@@ -261,7 +150,6 @@ namespace Simu.Common
         private decimal _cachedValue;
         private decimal _cachedValueUncapped;
         private bool _cacheValid;
-        private bool _isMultiplierOnly;
 
         /// <summary>
         /// Minimum value.
@@ -295,20 +183,20 @@ namespace Simu.Common
         /// <summary>
         /// Can be scaled with <see cref="AdditiveMultipliers"/> and <see cref="MultiplicativeMultipliers"/>.
         /// </summary>
-        public ModifierList BaseStats { get; private set; } = new();
+        public ModifierList BaseStats { get; private set; }
         /// <summary>
         /// Cannot be scaled by any means.
         /// Those are added to the final result at the end.
         /// </summary>
-        public ModifierList UnscalableStats { get; private set; } = new();
+        public ModifierList UnscalableStats { get; private set; }
         /// <summary>
         /// Each <see cref="Modifier"/> is added together and the final value is used as another multiplier.
         /// </summary>
-        public ModifierList AdditiveMultipliers { get; private set; } = new();
+        public ModifierList AdditiveMultipliers { get; private set; }
         /// <summary>
         /// All <see cref="Modifier"/>s are factored together and the final value is used as another multiplier.
         /// </summary>
-        public ModifierList MultiplicativeMultipliers { get; private set; } = new();
+        public ModifierList MultiplicativeMultipliers { get; private set; }
 
         /// <summary>
         /// Storage for the calcuated total value.
@@ -320,28 +208,18 @@ namespace Simu.Common
         /// </summary>
         public decimal TotalUncapped { get => _cachedValueUncapped; }
 
-        public Stat(decimal? defaultCap = null, decimal minValue = 0)
+        public Stat(decimal? defaultCap = null, decimal minValue = 0, bool isInverse = false)
         {
-            BaseStats = new();
-            BaseStats.OnCacheInvalidated += InvalidateCache;
-            UnscalableStats = new();
-            UnscalableStats.OnCacheInvalidated += InvalidateCache;
-            AdditiveMultipliers = new();
-            AdditiveMultipliers.OnCacheInvalidated += InvalidateCache;
-            MultiplicativeMultipliers = new();
-            MultiplicativeMultipliers.OnCacheInvalidated += InvalidateCache;
+            BaseStats = new SumModifierList(this);
+            UnscalableStats = new SumModifierList(this);
+            AdditiveMultipliers = new SumModifierList(this);
+            MultiplicativeMultipliers = new ProductModifierList(this, isInverse);
             this.DefaultCap = defaultCap;
             _cacheValid = false;
             MinValue = minValue;
-            _isMultiplierOnly = false;
         }
 
-        public Stat(bool isMultiplier) : this(null, 0)
-        {
-            _isMultiplierOnly = isMultiplier;
-        }
-
-        private void InvalidateCache()
+        public void InvalidateCache()
         {
             _cacheValid = false;
         }
@@ -354,10 +232,10 @@ namespace Simu.Common
         {
             Stat cpy = new(DefaultCap);
             cpy.ModifiedCap = ModifiedCap;
-            cpy.BaseStats = BaseStats.Clone();
-            cpy.UnscalableStats = UnscalableStats.Clone();
-            cpy.AdditiveMultipliers = AdditiveMultipliers.Clone();
-            cpy.MultiplicativeMultipliers = MultiplicativeMultipliers.Clone();
+            cpy.BaseStats = BaseStats.Clone(cpy);
+            cpy.UnscalableStats = UnscalableStats.Clone(cpy);
+            cpy.AdditiveMultipliers = AdditiveMultipliers.Clone(cpy);
+            cpy.MultiplicativeMultipliers = MultiplicativeMultipliers.Clone(cpy);
             return cpy;
         }
 
@@ -372,14 +250,12 @@ namespace Simu.Common
         {
             if (_cacheValid && _lastUsedTags.IsSubsetOf(tags)) return _cachedValue;
 
-            decimal sumBase = BaseStats.SumForMatchingTags(tags);
-            decimal sumAdditive = AdditiveMultipliers.SumForMatchingTags(tags) / 100.0m;
-            decimal productMultiplicative = MultiplicativeMultipliers.ProductForMatchingTags(tags);
-            decimal sumUnscalable = UnscalableStats.SumForMatchingTags(tags);
+            decimal sumBase = BaseStats.CalculateTotal(tags);
+            decimal sumAdditive = 1.0m + AdditiveMultipliers.CalculateTotal(tags) / 100.0m;
+            decimal productMultiplicative = MultiplicativeMultipliers.CalculateTotal(tags);
+            decimal sumUnscalable = UnscalableStats.CalculateTotal(tags);
 
-            decimal total = !_isMultiplierOnly
-                ? sumBase * (1.0m + sumAdditive) * (1.0m + productMultiplicative) + sumUnscalable
-                : (1.0m + sumAdditive) * (1.0m + productMultiplicative);
+            decimal total = sumBase * sumAdditive * productMultiplicative + sumUnscalable;
 
             // handle modified cap
             decimal? capToUse = ModifiedCap ?? DefaultCap ?? null;
@@ -419,13 +295,13 @@ namespace Simu.Common
 
         //TODO: change multipliers to just modifierlists?
         
-        public ModifierList IncreasedDamageMeleePercent { get; private set; } = new();
+        public ModifierList IncreasedDamageMeleePercent { get; private set; }
 
-        public ModifierList IncreasedDamageRangedPercent { get; private set;  } = new();
+        public ModifierList IncreasedDamageRangedPercent { get; private set;  }
 
-        public ModifierList IncreasedDamageMagicPercent { get; private set;  } = new();
+        public ModifierList IncreasedDamageMagicPercent { get; private set;  }
 
-        public ModifierList MoreDamagePercent { get; private set;  } = new();
+        public ModifierList MoreDamagePercent { get; private set;  }
 
         public Stat Health { get; private set; } = new();
 
@@ -456,13 +332,17 @@ namespace Simu.Common
         public Stat PetLuck { get; private set;  } = new();
 
         public Stat SeaCreatureChance { get; private set; } = new(100.0m);
-        public ModifierList DamageReductionPercent { get; private set; } = new();
+        public ModifierList DamageReductionPercent { get; private set; }
 
         #endregion
 
         public Stats()
         {
-            
+            IncreasedDamageMeleePercent = new SumModifierList();
+            IncreasedDamageRangedPercent = new SumModifierList();
+            IncreasedDamageMagicPercent = new SumModifierList();
+            MoreDamagePercent = new ProductModifierList(null, true);
+            DamageReductionPercent = new ProductModifierList();
         }
 
         public void AddBaseStats()
@@ -495,7 +375,7 @@ namespace Simu.Common
             copy.ConditionalTags = ConditionalTags;
             copy.IntelligenceScaleFactor = IntelligenceScaleFactor;
             copy.AbilityCooldown = AbilityCooldown;
-            copy.DungeoneeringDungeonizedMultiplier = (Modifier)DungeoneeringDungeonizedMultiplier.Clone();
+            copy.DungeoneeringDungeonizedMultiplier = DungeoneeringDungeonizedMultiplier.Clone();
             copy.FlatAttackDamage = FlatAttackDamage.Clone();
             copy.FlatAbilityDamage = FlatAbilityDamage.Clone();
             copy.IncreasedDamageMeleePercent = IncreasedDamageMeleePercent.Clone();

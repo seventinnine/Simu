@@ -50,8 +50,8 @@ namespace Simu.APICLient
 
 
             Console.WriteLine(stats1.Strength.CalculateTotal(ModifierTag.Cubism | ModifierTag.None));
-            Console.WriteLine(stats1.DamageReductionPercent.InverseProductForMatchingTags(ModifierTag.Cubism | ModifierTag.None));
-            Console.WriteLine(stats1.DamageReductionPercent.InverseProductForMatchingTags(ModifierTag.Ender | ModifierTag.Cubism | ModifierTag.None));
+            Console.WriteLine(stats1.DamageReductionPercent.CalculateTotal(ModifierTag.Cubism | ModifierTag.None));
+            Console.WriteLine(stats1.DamageReductionPercent.CalculateTotal(ModifierTag.Ender | ModifierTag.Cubism | ModifierTag.None));
             Console.WriteLine(calc.CalculateAverageDamagePerHit());
 
         }

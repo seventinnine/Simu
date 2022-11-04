@@ -3,7 +3,13 @@
 
 <h3>Sheet</h3>
 
-<Simu.Pages.SheetCategories.Profile AllStats="Stats" OnStatsChanged="RecalculateDamage"/>
+
+<!-- accordion -->
+
+
+<Simu.Pages.SheetCategories.Profile Model="ProfileData" OnStatsChanged="RecalculateDamage"/>
+
+
 
 <!--
 <h1>Accessories</h1>
@@ -90,7 +96,7 @@
     </span>
     <br/>
     Increased Damage: 
-    <span>@(Stats.IncreasedDamageMeleePercent.ValueProduct.ToString("P2")) 
+    <span>@(Stats.IncreasedDamageMeleePercent.Value.ToString("N2")) % 
 
     </span>
     <br/>

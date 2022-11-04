@@ -23,24 +23,19 @@ namespace Simu.Pages.SheetCategories
 {
     public partial class Profile
     {
-        [Parameter]
-        public Stats? AllStats { get; set; }
+
         [Parameter]
         public EventCallback OnStatsChanged { get; set; }
-        [Inject]
-        protected ProfileLogic _logic { get; set; } = default!;
 
-        public ProfileModel ProfileData { get; set; } = default!;
-        private EditContext? context;
+        [Parameter]
+        public ProfileModel? Model { get; set; } = default!;
 
         private bool _isInitialized = false;
 
+
         protected override void OnInitialized()
         {
-            ProfileData = new(_logic);
-            context = new EditContext(ProfileData);
-            ProfileData.Initialize(AllStats!, context);
-            ProfileData.OnChange += OnValidSubmit;
+            Model!.OnChange += OnValidSubmit;
             _isInitialized = true;
         }
 

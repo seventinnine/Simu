@@ -4,6 +4,7 @@ using Simu.Common;
 using Simu.Common.Constants;
 using Simu.Logic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Simu.Models
@@ -43,17 +44,18 @@ namespace Simu.Models
 
         #endregion
 
-        private bool _isInitialized = false;
+        private bool _isInitialized;
 
         private ProfileLogic _logic;
+        public Stats AllStats { get; set; }
 
-        public Stats? AllStats { get; set; }
         public event OnPropertyChanged? OnChange;
-        public EditContext? Context { get; set; }
 
-        public ProfileModel(ProfileLogic logic)
+        public ProfileModel(Stats stats, bool invokePropertyChanged = true)
         {
-            _logic = logic;
+            _isInitialized = false;
+            AllStats = stats;
+            _logic = new ProfileLogic();
             Modifier_SkyblockLevel_Health = new(MODIFIER_SKYBLOCK_LEVEL, 0);
             Modifier_SkyblockLevel_Strength = new(MODIFIER_SKYBLOCK_LEVEL, 0);
             Modifier_FarmingLevel_Health = new(MODIFIER_FARMING_LEVEL, 0);
@@ -70,15 +72,6 @@ namespace Simu.Models
             Modifier_CarpentryLevel_Health = new(MODIFIER_CARPENTRY_LEVEL, 0);
             Modifier_TamingLevel_PetLuck = new(MODIFIER_TAMING_LEVEL, 0);
             Modifier_DungeoneeringLevel_Health = new(MODIFIER_DUNGEONEERING_LEVEL, 0);
-        }
-
-        //TODO: add ctor for deserialization
-
-        public void Initialize(Stats stats, EditContext context)
-        {
-            AllStats = stats;
-            Context = context;
-            _isInitialized = true;
             AllStats.Health.BaseStats.Add(Modifier_SkyblockLevel_Health);
             AllStats.Strength.BaseStats.Add(Modifier_SkyblockLevel_Strength);
             AllStats.Health.BaseStats.Add(Modifier_FarmingLevel_Health);
@@ -95,8 +88,19 @@ namespace Simu.Models
             AllStats.Health.BaseStats.Add(Modifier_CarpentryLevel_Health);
             AllStats.PetLuck.BaseStats.Add(Modifier_TamingLevel_PetLuck);
             AllStats.Health.BaseStats.Add(Modifier_DungeoneeringLevel_Health);
+            _isInitialized = invokePropertyChanged;
+        }
+        
+        //TODO: implement cloning
+        public ProfileModel Clone(Stats stats)
+        {
+            ProfileModel cpy = new(stats, false);
+            cpy.Modifier_SkyblockLevel_Health = AllStats.Health.BaseStats.Get(Modifier_SkyblockLevel_Health.ID);
+            cpy._isInitialized = true;
+            return cpy;
         }
 
+        //TODO: add ctor for deserialization
 
         #region SkyblockLevel
 
@@ -108,16 +112,14 @@ namespace Simu.Models
         public void SetSkyblockLevel()
         {
             _logic.UpdateModifiersForSkyblockLevels(skyblockLevel, Modifier_SkyblockLevel_Health, Modifier_SkyblockLevel_Strength);
-            AllStats!.Health.BaseStats.InvalidateCacheAndReplaceModifier(Modifier_SkyblockLevel_Health);
-            AllStats.Strength.BaseStats.InvalidateCacheAndReplaceModifier(Modifier_SkyblockLevel_Strength);
         }
         public IEnumerable<FormattedString> SkyblockLevelBonusFormatted()
         {
             return new List<FormattedString>
             {
-                new() { ColorCodeHex = ColorCodeHex.RED, Content = $"{Modifier_SkyblockLevel_Health.Value:N0} {DisplayConstants.SYMBOL_HEALTH} "},
-                new() { Content = $" + "},
-                new() { ColorCodeHex = ColorCodeHex.DARK_RED, Content = $"{Modifier_SkyblockLevel_Strength.Value:N0} {DisplayConstants.SYMBOL_STRENGTH} "}
+                new() { ColorCodeHex = ColorCodeHex.RED, Content = $"{Modifier_SkyblockLevel_Health.Value:N0} {DisplayConstants.SYMBOL_HEALTH} (HP)"},
+                new() { IsNewline = true },
+                new() { ColorCodeHex = ColorCodeHex.DARK_RED, Content = $"{Modifier_SkyblockLevel_Strength.Value:N0} {DisplayConstants.SYMBOL_STRENGTH} (STR)"}
                 
             };
         }
@@ -136,14 +138,13 @@ namespace Simu.Models
         public void SetFarmingLevel()
         {
             _logic.UpdateModifiersForFarmingLevels(level_Farming, Modifier_FarmingLevel_Health);
-            AllStats!.Health.BaseStats.InvalidateCacheAndReplaceModifier(Modifier_FarmingLevel_Health);
         }
 
         public IEnumerable<FormattedString> FarmingLevelBonusFormatted()
         {
             return new List<FormattedString>
             {
-                new() { ColorCodeHex = ColorCodeHex.RED, Content = $"{Modifier_FarmingLevel_Health.Value:N0} {DisplayConstants.SYMBOL_HEALTH}"}
+                new() { ColorCodeHex = ColorCodeHex.RED, Content = $"{Modifier_FarmingLevel_Health.Value:N0} {DisplayConstants.SYMBOL_HEALTH} (HP)"}
             };
         }
 
@@ -159,20 +160,20 @@ namespace Simu.Models
         public void SetMiningLevel()
         {
             _logic.UpdateModifiersForMiningLevels(level_Mining, Modifier_MiningLevel_Defense);
-            AllStats!.Defense.BaseStats.InvalidateCacheAndReplaceModifier(Modifier_MiningLevel_Defense);
         }
 
         public IEnumerable<FormattedString> MiningLevelBonusFormatted()
         {
             return new List<FormattedString>
             {
-                new() { ColorCodeHex = ColorCodeHex.GREEN, Content = $"{Modifier_MiningLevel_Defense.Value:N0} {DisplayConstants.SYMBOL_DEFENSE}"}
+                new() { ColorCodeHex = ColorCodeHex.GREEN, Content = $"{Modifier_MiningLevel_Defense.Value:N0} {DisplayConstants.SYMBOL_DEFENSE} (DEF)"}
             };
         }
 
         #endregion
 
         #region Combat
+
         private int level_Combat;
 
         [Range(ProfileConstants.SKYBLOCK_COMBAT_MIN, ProfileConstants.SKYBLOCK_COMBAT_MAX, ErrorMessage = "Level must be between 0 and 60.")]
@@ -185,19 +186,15 @@ namespace Simu.Models
                 Modifier_CombatLevel_IncreasedRangedDamagePercent,
                 Modifier_CombatLevel_IncreasedMagicDamagePercent,
                 Modifier_CombatLevel_CritChancePercent);
-            AllStats!.IncreasedDamageMeleePercent.InvalidateCacheAndReplaceModifier(Modifier_CombatLevel_IncreasedMeleeDamagePercent);
-            AllStats!.IncreasedDamageRangedPercent.InvalidateCacheAndReplaceModifier(Modifier_CombatLevel_IncreasedRangedDamagePercent);
-            AllStats!.IncreasedDamageMagicPercent.InvalidateCacheAndReplaceModifier(Modifier_CombatLevel_IncreasedMagicDamagePercent);
-            AllStats!.CritChancePercent.BaseStats.InvalidateCacheAndReplaceModifier(Modifier_CombatLevel_CritChancePercent);
         }
 
         public IEnumerable<FormattedString> CombatLevelBonusFormatted()
         {
             return new List<FormattedString>
             {
-                new() { ColorCodeHex = ColorCodeHex.DARK_BLUE, Content = $"{Modifier_CombatLevel_CritChancePercent.Value:N1} {DisplayConstants.SYMBOL_CRITCHANCE}"},
-                new() { Content = $" + "},
-                new() { ColorCodeHex = ColorCodeHex.DARK_AQUA, Content = $"{Modifier_CombatLevel_IncreasedMeleeDamagePercent.Value:N0} % {DisplayConstants.SYMBOL_DAMAGE}"}
+                new() { ColorCodeHex = ColorCodeHex.DARK_BLUE, Content = $"{Modifier_CombatLevel_CritChancePercent.Value:N1} {DisplayConstants.SYMBOL_CRITCHANCE} (CC)"},
+                new() { IsNewline = true},
+                new() { ColorCodeHex = ColorCodeHex.DARK_AQUA, Content = $"{Modifier_CombatLevel_IncreasedMeleeDamagePercent.Value:N0} % {DisplayConstants.SYMBOL_DAMAGE} (DMG)"}
             };
         }
 
@@ -212,14 +209,13 @@ namespace Simu.Models
         public void SetForagingLevel()
         {
             _logic.UpdateModifiersForForagingLevels(level_Foraging, Modifier_ForagingLevel_Strength);
-            AllStats!.Strength.BaseStats.InvalidateCacheAndReplaceModifier(Modifier_ForagingLevel_Strength);
         }
 
         public IEnumerable<FormattedString> ForagingLevelBonusFormatted()
         {
             return new List<FormattedString>
             {
-                new() { ColorCodeHex = ColorCodeHex.DARK_RED, Content = $"{Modifier_ForagingLevel_Strength.Value:N0} {DisplayConstants.SYMBOL_STRENGTH}"}
+                new() { ColorCodeHex = ColorCodeHex.DARK_RED, Content = $"{Modifier_ForagingLevel_Strength.Value:N0} {DisplayConstants.SYMBOL_STRENGTH} (STR)"}
             };
         }
 
@@ -234,14 +230,13 @@ namespace Simu.Models
         public void SetFishingLevel()
         {
             _logic.UpdateModifiersForFishingLevels(level_Fishing, Modifier_FishingLevel_Health);
-            AllStats!.Health.BaseStats.InvalidateCacheAndReplaceModifier(Modifier_FishingLevel_Health);
         }
 
         public IEnumerable<FormattedString> FishingLevelBonusFormatted()
         {
             return new List<FormattedString>
             {
-                new() { ColorCodeHex = ColorCodeHex.RED, Content = $"{Modifier_FishingLevel_Health.Value:N0} {DisplayConstants.SYMBOL_HEALTH}"}
+                new() { ColorCodeHex = ColorCodeHex.RED, Content = $"{Modifier_FishingLevel_Health.Value:N0} {DisplayConstants.SYMBOL_HEALTH} (HP)"}
             };
         }
 
@@ -256,17 +251,15 @@ namespace Simu.Models
         public void SetEnchantingLevel()
         {
             _logic.UpdateModifiersForEnchantingLevels(level_Enchanting, Modifier_EnchantingLevel_Intelligence, Modifier_EnchantingLevel_AbilityDamage);
-            AllStats!.Intelligence.BaseStats.InvalidateCacheAndReplaceModifier(Modifier_EnchantingLevel_Intelligence);
-            AllStats!.AbilityDamagePercent.BaseStats.InvalidateCacheAndReplaceModifier(Modifier_EnchantingLevel_AbilityDamage);
         }
 
         public IEnumerable<FormattedString> EnchantingLevelBonusFormatted()
         {
             return new List<FormattedString>
             {
-                new() { ColorCodeHex = ColorCodeHex.AQUA, Content = $"{Modifier_EnchantingLevel_Intelligence.Value:N0} {DisplayConstants.SYMBOL_INTELLIGENCE}"},
-                new() {Content = " + "},
-                new() { ColorCodeHex = ColorCodeHex.RED, Content = $"{Modifier_EnchantingLevel_AbilityDamage.Value:N1} {DisplayConstants.SYMBOL_ABILITYDAMAGE}"}
+                new() { ColorCodeHex = ColorCodeHex.AQUA, Content = $"{Modifier_EnchantingLevel_Intelligence.Value:N0} {DisplayConstants.SYMBOL_INTELLIGENCE} (INT)"},
+                new() { IsNewline = true },
+                new() { ColorCodeHex = ColorCodeHex.RED, Content = $"{Modifier_EnchantingLevel_AbilityDamage.Value:N1} {DisplayConstants.SYMBOL_ABILITYDAMAGE} (AD)"}
             };
         }
 
@@ -281,14 +274,13 @@ namespace Simu.Models
         public void SetAlchemyLevel()
         {
             _logic.UpdateModifiersForAlchemyLevels(level_Alchemy, Modifier_AlchemyLevel_Intelligence);
-            AllStats!.Intelligence.BaseStats.InvalidateCacheAndReplaceModifier(Modifier_AlchemyLevel_Intelligence);
         }
 
         public IEnumerable<FormattedString> AlchemyLevelBonusFormatted()
         {
             return new List<FormattedString>
             {
-                new() { ColorCodeHex = ColorCodeHex.AQUA, Content = $"{Modifier_AlchemyLevel_Intelligence.Value:N0} {DisplayConstants.SYMBOL_INTELLIGENCE}"}
+                new() { ColorCodeHex = ColorCodeHex.AQUA, Content = $"{Modifier_AlchemyLevel_Intelligence.Value:N0} {DisplayConstants.SYMBOL_INTELLIGENCE} (INT)"}
             };
         }
 
@@ -303,14 +295,13 @@ namespace Simu.Models
         public void SetCarpentryLevel()
         {
             _logic.UpdateModifiersForCarpentryLevels(level_Carpentry, Modifier_CarpentryLevel_Health);
-            AllStats!.Health.BaseStats.InvalidateCacheAndReplaceModifier(Modifier_CarpentryLevel_Health);
         }
 
         public IEnumerable<FormattedString> CarpentryLevelBonusFormatted()
         {
             return new List<FormattedString>
             {
-                new() { ColorCodeHex = ColorCodeHex.RED, Content = $"{Modifier_CarpentryLevel_Health.Value:N0} {DisplayConstants.SYMBOL_HEALTH}"}
+                new() { ColorCodeHex = ColorCodeHex.RED, Content = $"{Modifier_CarpentryLevel_Health.Value:N0} {DisplayConstants.SYMBOL_HEALTH} (HP)"}
             };
         }
 
@@ -325,15 +316,13 @@ namespace Simu.Models
         public void SetTamingLevel()
         {
             _logic.UpdateModifiersForTamingLevels(level_Taming, Modifier_TamingLevel_PetLuck);
-            //TODO: add backref to modifierlist in modiifer and make this a method
-            AllStats!.PetLuck.BaseStats.InvalidateCacheAndReplaceModifier(Modifier_TamingLevel_PetLuck);
         }
 
         public IEnumerable<FormattedString> TamingLevelBonusFormatted()
         {
             return new List<FormattedString>
             {
-                new() { ColorCodeHex = ColorCodeHex.LIGHT_PURPLE, Content = $"{Modifier_TamingLevel_PetLuck.Value:N0} {DisplayConstants.SYMBOL_PETLUCK}"}
+                new() { ColorCodeHex = ColorCodeHex.LIGHT_PURPLE, Content = $"{Modifier_TamingLevel_PetLuck.Value:N0} {DisplayConstants.SYMBOL_PETLUCK} (PL)"}
             };
         }
 
@@ -348,15 +337,14 @@ namespace Simu.Models
         public void SetDungeoneeringLevel()
         {
             _logic.UpdateModifiersForDungeoneeringLevels(level_Dungeoneering, Modifier_DungeoneeringLevel_Health, AllStats!.DungeoneeringDungeonizedMultiplier);
-            AllStats!.Health.BaseStats.InvalidateCacheAndReplaceModifier(Modifier_DungeoneeringLevel_Health);
         }
 
         public IEnumerable<FormattedString> DungeoneeringLevelBonusFormatted()
         {
             return new List<FormattedString>
             {
-                new() { ColorCodeHex = ColorCodeHex.RED, Content = $"{Modifier_DungeoneeringLevel_Health.Value:N0} {DisplayConstants.SYMBOL_HEALTH}"},
-                new() { Content = " + "},
+                new() { ColorCodeHex = ColorCodeHex.RED, Content = $"{Modifier_DungeoneeringLevel_Health.Value:N0} {DisplayConstants.SYMBOL_HEALTH} (HP)"},
+                new() { IsNewline = true },
                 new() { ColorCodeHex = ColorCodeHex.GOLD, Content = $"{AllStats!.DungeoneeringDungeonizedMultiplier.Value:N0} {DisplayConstants.SYMBOL_STAR}"},
             };
         }
@@ -367,11 +355,7 @@ namespace Simu.Models
 
         private void OnValidInputSubmit()
         {
-            bool? res = Context?.Validate();
-            if (res.HasValue && res.Value)
-            {
-                OnChange?.Invoke();
-            }
+            OnChange?.Invoke();
         }
 
     }

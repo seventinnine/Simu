@@ -8,15 +8,17 @@ namespace Simu.Common
 {
     public class NotifyPropertyChanged
     {
-        public static void Set<T>(ref T field, T newValue, Action action, Action propertyChanged, bool isInitialized)
+        public static void Set<T>(ref T field, T newValue, Action action, Action propertyChanged, bool invokePropertyChanged = true)
         {
-            if (!EqualityComparer<T>.Default.Equals(newValue, field) && isInitialized)
+            if (!EqualityComparer<T>.Default.Equals(newValue, field) && )
             {
                 field = newValue;
 
                 action.Invoke();
 
-                propertyChanged.Invoke();
+                if (invokePropertyChanged)
+                    propertyChanged.Invoke();
+
             }
         }
     }
