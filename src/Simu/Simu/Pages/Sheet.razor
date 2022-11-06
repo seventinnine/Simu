@@ -1,13 +1,28 @@
 ﻿
 
 
-<h3>Sheet</h3>
+
+<!-- naviagation bar -->
+<RadzenTabs>
+    <Tabs>
+        <RadzenTabsItem Text="Profile Stuff">
+            <Simu.Pages.SheetCategories.Profile Model="ProfileData" OnStatsChanged="NotifyStatsChanged"/>
+        </RadzenTabsItem>
+        <RadzenTabsItem Text="Accessories">
+
+        </RadzenTabsItem>
+        <RadzenTabsItem Icon="save">
+
+        </RadzenTabsItem>
+        <RadzenTabsItem Text="Import" Icon="note_add">
+
+        </RadzenTabsItem>
+    </Tabs>
+
+</RadzenTabs>
 
 
-<!-- accordion -->
 
-
-<Simu.Pages.SheetCategories.Profile Model="ProfileData" OnStatsChanged="RecalculateDamage"/>
 
 
 
@@ -60,6 +75,7 @@
 
 -->
 <div>
+    <!--
     Total Values:
     <br />
     Health: 
@@ -127,5 +143,5 @@
     <br/>
     Dungeonized Bonus:
     <span>@(Stats.DungeoneeringDungeonizedMultiplier.Value.ToString("N2")) %</span>
-
+    -->
 </div>

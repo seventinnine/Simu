@@ -37,6 +37,13 @@ namespace Simu.Common
 
     public static class ModifierTagExtensions
     {
+        public static string ToAggregatedString(this ModifierTag current)
+        {
+            return Enum.GetValues<ModifierTag>()
+                .Where(t => t.IsSubsetOf(current) && !t.IsEqualTo(ModifierTag.None))
+                .Select(t => t.ToString())
+                .Aggregate((l, r) => $"{l}, {r}");
+        }
         public static ModifierTag Add(this ModifierTag current, ModifierTag toAdd)
         {
             return current | toAdd;

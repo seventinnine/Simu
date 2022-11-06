@@ -4,123 +4,175 @@
 
 <h1>Profile-Specific-Stuff</h1>
 
-<RadzenTemplateForm TItem="Simu.Models.ProfileModel" Data="Model" OnValidSubmit="OnValidSubmit">
-    <div class="row">
-        <div class="col-4">
-            <div class="col m-1 p-3">
-                <RadzenCard class="card-skills">
-                    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Skyblock Level (0-500):</RadzenText>
+<RadzenTemplateForm TItem="Simu.Models.ProfileStats" Data="Model" OnValidSubmit="OnValidSubmit">
+    <div class="scoped-grid-container">
+        <div>
+            <RadzenCard class="m-3 p-3">
+                <RadzenText TextStyle="TextStyle.H6" >Skyblock Levels:</RadzenText>
                     <RadzenNumeric Min="@ProfileConstants.SKYBLOCK_LEVEL_MIN" Max="@ProfileConstants.SKYBLOCK_LEVEL_MAX" @bind-Value="Model.SkyblockLevel"/>
                     <div class="card-skills-stats">
                         <FormattedStringComponent Strings="@Model.SkyblockLevelBonusFormatted()"/>
                     </div>
-                </RadzenCard>
-            </div>
-            <div>
-                Melody
-            </div>
-            <div>
-                Slayer
-            </div>
-        </div>
-        <div class="col-8">
-            <div class="row">
-                <div class="col m-1 p-3">
-                    <RadzenCard class="card-skills">
-                        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Farming (0-60):</RadzenText>
-                        <RadzenNumeric Min="@ProfileConstants.SKYBLOCK_FARMING_MIN" Max="@ProfileConstants.SKYBLOCK_FARMING_MAX" @bind-Value="Model.Level_Farming"/>
-                        <div class="card-skills-stats">
-                            <FormattedStringComponent Strings="@Model.FarmingLevelBonusFormatted()"/>
-                        </div>
-                    </RadzenCard>
+            </RadzenCard>
+            <RadzenCard class="m-3 p-3">
+                <RadzenText TextStyle="TextStyle.H6" >Skills:</RadzenText>
+                <div class="d-flex justify-content-start flex-wrap">
+                    <div class="m-1 p-1">
+                        <RadzenCard class="card-skills">
+                            <RadzenText TextStyle="TextStyle.H6">Farming (0-60):</RadzenText>
+                            <RadzenNumeric Min="@ProfileConstants.SKYBLOCK_FARMING_MIN" Max="@ProfileConstants.SKYBLOCK_FARMING_MAX" @bind-Value="Model.Level_Farming"/>
+                            <div class="card-skills-stats">
+                                <FormattedStringComponent Strings="@Model.FarmingLevelBonusFormatted()"/>
+                            </div>
+                        </RadzenCard>
+                    </div>
+                    <div class="m-1 p-1">
+                        <RadzenCard class="card-skills">
+                            <RadzenText TextStyle="TextStyle.H6">Mining (0-60):</RadzenText>
+                            <RadzenNumeric Min="@ProfileConstants.SKYBLOCK_MINING_MIN" Max="@ProfileConstants.SKYBLOCK_MINING_MAX" @bind-Value="Model.Level_Mining"/>
+                            <div class="card-skills-stats">
+                                <FormattedStringComponent Strings="@Model.MiningLevelBonusFormatted()"/>
+                            </div>
+                        </RadzenCard>
+                    </div>
+                    <div class="m-1 p-1">
+                        <RadzenCard class="card-skills">
+                            <RadzenText TextStyle="TextStyle.H6">Combat (0-60):</RadzenText>
+                            <RadzenNumeric Min="@ProfileConstants.SKYBLOCK_COMBAT_MIN" Max="@ProfileConstants.SKYBLOCK_COMBAT_MAX" @bind-Value="Model.Level_Combat"/>
+                            <div class="card-skills-stats">
+                                <FormattedStringComponent Strings="@Model.CombatLevelBonusFormatted()"/>
+                            </div>
+                        </RadzenCard>
+                    </div>
+                    <div class="m-1 p-1">
+                        <RadzenCard class="card-skills">
+                            <RadzenText TextStyle="TextStyle.H6">Foraging (0-50):</RadzenText>
+                            <RadzenNumeric Min="@ProfileConstants.SKYBLOCK_FORAGING_MIN" Max="@ProfileConstants.SKYBLOCK_FORAGING_MAX" @bind-Value="Model.Level_Foraging"/>
+                            <div class="card-skills-stats">
+                                <FormattedStringComponent Strings="@Model.ForagingLevelBonusFormatted()"/>
+                            </div>
+                        </RadzenCard>
+                    </div>
+                    <div class="m-1 p-1">
+                        <RadzenCard class="card-skills">
+                            <RadzenText TextStyle="TextStyle.H6">Fishing (0-50):</RadzenText>
+                            <RadzenNumeric Min="@ProfileConstants.SKYBLOCK_FISHING_MIN" Max="@ProfileConstants.SKYBLOCK_FISHING_MAX" @bind-Value="Model.Level_Fishing"/>
+                            <div class="card-skills-stats">
+                                <FormattedStringComponent Strings="@Model.FishingLevelBonusFormatted()"/>
+                            </div>
+                        </RadzenCard>
+                    </div>
+                    <div class="m-1 p-1">
+                        <RadzenCard class="card-skills">
+                            <RadzenText TextStyle="TextStyle.H6">Enchanting (0-60):</RadzenText>
+                            <RadzenNumeric Min="@ProfileConstants.SKYBLOCK_ENCHANTING_MIN" Max="@ProfileConstants.SKYBLOCK_ENCHANTING_MAX" @bind-Value="Model.Level_Enchanting"/>
+                            <div class="card-skills-stats">
+                                <FormattedStringComponent Strings="@Model.EnchantingLevelBonusFormatted()"/>
+                            </div>
+                        </RadzenCard>
+                    </div>
+                    <div class="m-1 p-1">
+                        <RadzenCard class="card-skills">
+                            <RadzenText TextStyle="TextStyle.H6">Alchemy (0-50):</RadzenText>
+                            <RadzenNumeric Min="@ProfileConstants.SKYBLOCK_ALCHEMY_MIN" Max="@ProfileConstants.SKYBLOCK_ALCHEMY_MAX" @bind-Value="Model.Level_Alchemy"/>
+                            <div class="card-skills-stats">
+                                <FormattedStringComponent Strings="@Model.AlchemyLevelBonusFormatted()"/>
+                            </div>
+                        </RadzenCard>
+                    </div>
+                    <div class="m-1 p-1">
+                        <RadzenCard class="card-skills">
+                            <RadzenText TextStyle="TextStyle.H6">Carpentry (0-50):</RadzenText>
+                            <RadzenNumeric Min="@ProfileConstants.SKYBLOCK_CARPENTRY_MIN" Max="@ProfileConstants.SKYBLOCK_CARPENTRY_MAX" @bind-Value="Model.Level_Carpentry"/>
+                            <div class="card-skills-stats">
+                                <FormattedStringComponent Strings="@Model.CarpentryLevelBonusFormatted()"/>
+                            </div>
+                        </RadzenCard>
+                    </div>
+                    <div class="m-1 p-1">
+                        <RadzenCard class="card-skills">
+                            <RadzenText TextStyle="TextStyle.H6">Taming (0-50):</RadzenText>
+                            <RadzenNumeric Min="@ProfileConstants.SKYBLOCK_TAMING_MIN" Max="@ProfileConstants.SKYBLOCK_TAMING_MAX" @bind-Value="Model.Level_Taming"/>
+                            <div class="card-skills-stats">
+                                <FormattedStringComponent Strings="@Model.TamingLevelBonusFormatted()"/>
+                            </div>
+                        </RadzenCard>
+                    </div>
+                    <div class="m-1 p-1">
+                        <RadzenCard class="card-skills">
+                            <RadzenText TextStyle="TextStyle.H6">Catacombs (0-50):</RadzenText>
+                            <RadzenNumeric Min="@ProfileConstants.SKYBLOCK_DUNGEONEERING_MIN" Max="@ProfileConstants.SKYBLOCK_DUNGEONEERING_MAX" @bind-Value="Model.Level_Dungeoneering"/>
+                            <div class="card-skills-stats">
+                                <FormattedStringComponent Strings="@Model.DungeoneeringLevelBonusFormatted()"/>
+                            </div>
+                        </RadzenCard>
+                    </div>
                 </div>
-                <div class="col m-1 p-3">
-                    <RadzenCard class="card-skills">
-                        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Mining (0-60):</RadzenText>
-                        <RadzenNumeric Min="@ProfileConstants.SKYBLOCK_MINING_MIN" Max="@ProfileConstants.SKYBLOCK_MINING_MAX" @bind-Value="Model.Level_Mining"/>
-                        <div class="card-skills-stats">
-                            <FormattedStringComponent Strings="@Model.MiningLevelBonusFormatted()"/>
-                        </div>
-                    </RadzenCard>
-                </div>
-                <div class="col m-1 p-3">
-                    <RadzenCard class="card-skills">
-                        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Combat (0-60):</RadzenText>
-                        <RadzenNumeric Min="@ProfileConstants.SKYBLOCK_COMBAT_MIN" Max="@ProfileConstants.SKYBLOCK_COMBAT_MAX" @bind-Value="Model.Level_Combat"/>
-                        <div class="card-skills-stats">
-                            <FormattedStringComponent Strings="@Model.CombatLevelBonusFormatted()"/>
-                        </div>
-                    </RadzenCard>
-                </div>
-                <div class="col m-1 p-3">
-                    <RadzenCard class="card-skills">
-                        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Foraging (0-540):</RadzenText>
-                        <RadzenNumeric Min="@ProfileConstants.SKYBLOCK_FORAGING_MIN" Max="@ProfileConstants.SKYBLOCK_FORAGING_MAX" @bind-Value="Model.Level_Foraging"/>
-                        <div class="card-skills-stats">
-                            <FormattedStringComponent Strings="@Model.ForagingLevelBonusFormatted()"/>
-                        </div>
-                    </RadzenCard>
-                </div>
-                <div class="col m-1 p-3">
-                    <RadzenCard class="card-skills">
-                        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Fishing (0-50):</RadzenText>
-                        <RadzenNumeric Min="@ProfileConstants.SKYBLOCK_FISHING_MIN" Max="@ProfileConstants.SKYBLOCK_FISHING_MAX" @bind-Value="Model.Level_Fishing"/>
-                        <div class="card-skills-stats">
-                            <FormattedStringComponent Strings="@Model.FishingLevelBonusFormatted()"/>
-                        </div>
-                    </RadzenCard>
-                </div>
-                <div class="col m-1 p-3">
-                    <RadzenCard class="card-skills">
-                        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Enchanting (0-60):</RadzenText>
-                        <RadzenNumeric Min="@ProfileConstants.SKYBLOCK_ENCHANTING_MIN" Max="@ProfileConstants.SKYBLOCK_ENCHANTING_MAX" @bind-Value="Model.Level_Enchanting"/>
-                        <div class="card-skills-stats">
-                            <FormattedStringComponent Strings="@Model.EnchantingLevelBonusFormatted()"/>
-                        </div>
-                    </RadzenCard>
-                </div>
-                <div class="col m-1 p-3">
-                    <RadzenCard class="card-skills">
-                        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Alchemy (0-50):</RadzenText>
-                        <RadzenNumeric Min="@ProfileConstants.SKYBLOCK_ALCHEMY_MIN" Max="@ProfileConstants.SKYBLOCK_ALCHEMY_MAX" @bind-Value="Model.Level_Alchemy"/>
-                        <div class="card-skills-stats">
-                            <FormattedStringComponent Strings="@Model.AlchemyLevelBonusFormatted()"/>
-                        </div>
-                    </RadzenCard>
-                </div>
-                <div class="col m-1 p-3">
-                    <RadzenCard class="card-skills">
-                        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Carpentry (0-50):</RadzenText>
-                        <RadzenNumeric Min="@ProfileConstants.SKYBLOCK_CARPENTRY_MIN" Max="@ProfileConstants.SKYBLOCK_CARPENTRY_MAX" @bind-Value="Model.Level_Carpentry"/>
-                        <div class="card-skills-stats">
-                            <FormattedStringComponent Strings="@Model.CarpentryLevelBonusFormatted()"/>
-                        </div>
-                    </RadzenCard>
-                </div>
-                <div class="col m-1 p-3">
-                    <RadzenCard class="card-skills">
-                        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Taming (0-50):</RadzenText>
-                        <RadzenNumeric Min="@ProfileConstants.SKYBLOCK_TAMING_MIN" Max="@ProfileConstants.SKYBLOCK_TAMING_MAX" @bind-Value="Model.Level_Taming"/>
-                        <div class="card-skills-stats">
-                            <FormattedStringComponent Strings="@Model.TamingLevelBonusFormatted()"/>
-                        </div>
-                    </RadzenCard>
-                </div>
-                <div class="col m-1 p-3">
-                    <RadzenCard class="card-skills">
-                        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Dungeoneering (0-50):</RadzenText>
-                        <RadzenNumeric Min="@ProfileConstants.SKYBLOCK_DUNGEONEERING_MIN" Max="@ProfileConstants.SKYBLOCK_DUNGEONEERING_MAX" @bind-Value="Model.Level_Dungeoneering"/>
-                        <div class="card-skills-stats">
-                            <FormattedStringComponent Strings="@Model.DungeoneeringLevelBonusFormatted()"/>
-                        </div>
-                    </RadzenCard>
-                </div>
-            </div>
+            </RadzenCard>
+            <RadzenCard class="m-3 p-3">
+                <RadzenText TextStyle="TextStyle.H6" >Slayer:</RadzenText>
+                <div class="d-flex justify-content-start flex-wrap">
+                    <div class="m-1 p-1">
+                        <RadzenCard class="card-slayer">
+                            <RadzenText TextStyle="TextStyle.H6">Zombie:</RadzenText>
+                            <RadzenNumeric Min="@ProfileConstants.SLAYER_LEVEL_MIN" Max="@ProfileConstants.SLAYER_LEVEL_MAX" @bind-Value="Model.Slayer_Zombie"/>
+                            <div class="card-skills-stats">
+                                <FormattedStringComponent Strings="@Model.ZombieSlayerBonusFormatted()"/>
+                            </div>
+                        </RadzenCard>
+                    </div>
+                    <div class="m-1 p-1">
+                        <RadzenCard class="card-slayer">
+                            <RadzenText TextStyle="TextStyle.H6">Spider:</RadzenText>
+                            <RadzenNumeric Min="@ProfileConstants.SLAYER_LEVEL_MIN" Max="@ProfileConstants.SLAYER_LEVEL_MAX" @bind-Value="Model.Slayer_Spider"/>
+                            <div class="card-skills-stats">
+                                <FormattedStringComponent Strings="@Model.SpiderSlayerBonusFormatted()"/>
+                            </div>
+                        </RadzenCard>
+                    </div>
+                    <div class="m-1 p-1">
+                        <RadzenCard class="card-slayer">
+                            <RadzenText TextStyle="TextStyle.H6">Wolf:</RadzenText>
+                            <RadzenNumeric Min="@ProfileConstants.SLAYER_LEVEL_MIN" Max="@ProfileConstants.SLAYER_LEVEL_MAX" @bind-Value="Model.Slayer_Wolf"/>
+                            <div class="card-skills-stats">
+                                <FormattedStringComponent Strings="@Model.WolfSlayerBonusFormatted()"/>
+                            </div>
+                        </RadzenCard>
+                    </div>
+                    <div class="m-1 p-1">
+                        <RadzenCard class="card-slayer">
+                            <RadzenText TextStyle="TextStyle.H6">Enderman:</RadzenText>
+                            <RadzenNumeric Min="@ProfileConstants.SLAYER_LEVEL_MIN" Max="@ProfileConstants.SLAYER_LEVEL_MAX" @bind-Value="Model.Slayer_Enderman"/>
+                            <div class="card-skills-stats">
+                                <FormattedStringComponent Strings="@Model.EndermanSlayerBonusFormatted()"/>
+                            </div>
+                        </RadzenCard>
+                    </div>
+                    <div class="m-1 p-1">
+                        <RadzenCard class="card-slayer">
+                            <RadzenText TextStyle="TextStyle.H6">Blaze:</RadzenText>
+                            <RadzenNumeric Min="@ProfileConstants.SLAYER_LEVEL_MIN" Max="@ProfileConstants.SLAYER_LEVEL_MAX" @bind-Value="Model.Slayer_Blaze"/>
+                            <div class="card-skills-stats">
+                                <FormattedStringComponent Strings="@Model.BlazeSlayerBonusFormatted()"/>
+                            </div>
+                        </RadzenCard>
+                    </div>
+                </div>   
+            </RadzenCard>
+        </div>   
+        <div>
+            <RadzenCard class="m-3 p-3">
+                <RadzenText TextStyle="TextStyle.H6" >Melody Songs:</RadzenText>
+                <RadzenCheckBoxList @bind-Value="Model.MelodyCompletionNames" AllowSelectAll="true" SelectAllText="Select All" Orientation="Orientation.Vertical" TValue="string" Change="@(args => Model.OnMelodySongsChange())">
+                    <Items>
+                        @foreach (var pair in Simu.Common.Systems.Profile.MelodySong.IntelligenceForSongs)
+                        {
+                            <RadzenCheckBoxListItem Text="@pair.Value.DisplayName" Value="@pair.Key"/>                                    
+                        }
+                    </Items>
+                </RadzenCheckBoxList>
+                <FormattedStringComponent Strings="@Model.MelodySongsBonusFormatted()"/>
+            </RadzenCard>
         </div>
     </div>
 </RadzenTemplateForm>
-
-
-<h2>melody</h2>
-
-<h2>slayer level stats</h2>

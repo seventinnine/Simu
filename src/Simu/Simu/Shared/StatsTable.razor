@@ -1,0 +1,18 @@
+﻿@using Simu.Common
+
+<h3>Sources</h3>
+<div class="d-flex flex-row">
+
+    <ModifierTable AllStats="AllStats" ModifierList="Stat.BaseStats" Type="Base"></ModifierTable>
+    <ModifierTable AllStats="AllStats" ModifierList="Stat.AdditiveMultipliers" Type="Increased" IsPercentage="true"></ModifierTable>
+    <ModifierTable AllStats="AllStats" ModifierList="Stat.MultiplicativeMultipliers" Type="More" IsPercentage="true"></ModifierTable>
+    <ModifierTable AllStats="AllStats" ModifierList="Stat.UnscalableStats" Type="Final"></ModifierTable>
+
+</div>
+@code {
+    [Parameter]
+    public Stats AllStats { get; set; } = default!;
+    [Parameter]
+    public Stat Stat { get; set; } = default!;
+
+}

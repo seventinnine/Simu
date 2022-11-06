@@ -13,32 +13,25 @@ using Microsoft.AspNetCore.Components.WebAssembly.Http;
 using Microsoft.JSInterop;
 using Simu;
 using Simu.Shared;
+using Radzen;
+using Radzen.Blazor;
 using Simu.Common;
-using Simu.Common.Systems.Profile;
-using System.Diagnostics;
-using Simu.Models;
-using Simu.Logic;
 
-namespace Simu.Pages.SheetCategories
+namespace Simu.Pages.Breakdown
 {
-    public partial class Profile
+    public partial class StatBreakdown
     {
 
-        [Parameter]
-        public EventCallback OnStatsChanged { get; set; }
-
-        [Parameter]
-        public ProfileStats Model { get; set; } = default!;
+        [Inject]
+        protected TooltipService tooltipService { get; set; } = default!;
         
-        protected override void OnInitialized()
-        {
-            Model!.OnChange += OnValidSubmit;
-        }
 
-        public void OnValidSubmit()
-        {
-            OnStatsChanged.InvokeAsync();
-        }
+        [Parameter]
+        public Stats AllStats { get; set; } = default!;
+        [Parameter]
+        public DamageCalculator Calculator { get; set; } = default!;
+
+        private TooltipOptions _options = new() { Position = TooltipPosition.Right, Duration = null, Style = "background-color: rgba(24, 24, 24, 0.9);" };
 
     }
 }

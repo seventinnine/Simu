@@ -16,53 +16,48 @@ using Simu.Shared;
 using Simu.Common;
 using Simu.Models;
 using Simu.Logic;
+using Radzen;
 
 namespace Simu.Pages
 {
     public partial class Sheet
     {
         #region Models
-        public ProfileModel ProfileData { get; set; }
+        public ProfileStats ProfileData { get; set; } = default!;
 
         #endregion
-        
-        public Stats Stats { get; set; }
-        public StatsCalculator Calculator { get; set; }
-        public AttackMode Mode { get; set; }
 
-        public Sheet()
+
+        [Parameter]
+        public EventCallback OnStatsChanged { get; set; }
+
+        [Parameter]
+        public Stats Stats { get; set; } = default!;
+
+
+
+        //TODO: how to load savestate?
+        protected override void OnInitialized()
         {
-            Mode = AttackMode.Melee;
-            Stats = new();
-            Stats.AddBaseStats();
-            Calculator = new(Stats, Mode);
-
             #region Create Models
 
             ProfileData = new(Stats);
-            #endregion
-        }
-
-        protected override void OnInitialized()
-        {
-            #region MyRegion
-
+            
             #endregion
         }
 
         public Sheet Clone()
         {
-            Sheet cpy = new Sheet() { Stats = Stats.Clone(), Mode = Mode};
-            cpy.Calculator = new StatsCalculator(cpy.Stats, Mode);
-            cpy.ProfileData = ProfileData.Clone(cpy.Stats);
+            Sheet cpy = new Sheet() { Stats = Stats.Clone()};
+            cpy.ProfileData = new ProfileStats(cpy.Stats, ProfileData);
             return cpy;
         }
 
-        public void RecalculateDamage()
+        public void NotifyStatsChanged()
         {
-            Calculator.RecalculateAllStats();
-            Console.WriteLine(Calculator.CalculateDamagePerSecond());
+            OnStatsChanged.InvokeAsync();
         }
+
 
     }
 }

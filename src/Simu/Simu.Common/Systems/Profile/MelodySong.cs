@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Simu.Common.Constants;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -41,25 +42,20 @@ namespace Simu.Common.Systems.Profile
 
         public string DisplayName { get; set; } = string.Empty;
         public int Intelligence { get; set; }
-        public bool Enabled { get; set; }
 
         public MelodySong(string displayName, int intelligence)
         {
             DisplayName = displayName;
             Intelligence = intelligence;
-            Enabled = false;
         }
 
-        public MelodySong(string displayName, int intelligence, bool enabled)
+        public IEnumerable<FormattedString> ToFormattedString()
         {
-            DisplayName = displayName;
-            Intelligence = intelligence;
-            Enabled = enabled;
-        }
+            return new List<FormattedString>
+            {
+                new() { ColorCodeHex = ColorCodeHex.AQUA, Content = $"{DisplayName} ({Intelligence} {DisplayConstants.SYMBOL_INTELLIGENCE} (INT))"}
 
-        public override string ToString()
-        {
-            return DisplayName;
+            };
         }
     }
 }

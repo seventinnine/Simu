@@ -1,0 +1,72 @@
+﻿@using Simu.Common
+
+@if(IsStandalone)
+{
+    <h3>Sources</h3>
+}
+
+@if (ModifierList is not null)
+{
+    @if (ModifierList.Any(s => s.RequiredTags.IsSubsetOf(AllStats.ConditionalTags) && s.Value != decimal.Zero))
+    {
+        <div class="stats-table">
+            <h4>@Type</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>
+                            ID
+                        </th>
+                        <th>
+                            Value
+                        </th>
+                        <th>
+                            Requirements
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var mod in ModifierList.Where(s => s.RequiredTags.IsSubsetOf(AllStats.ConditionalTags) && s.Value != decimal.Zero))
+                    {
+                        <tr>
+                            <td>
+                                @mod.ID
+                            </td>
+                            <td class="table-value">
+                                @mod.ToString()
+                            </td>
+                            <td>
+                                @mod.RequiredTagsToString()
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                        <tr>
+                        <th class="table-value">Total:</th>
+                        <th class="table-value">@(IsPercentage 
+                            ? $"{ModifierList.CalculateTotal(AllStats.ConditionalTags):N2)} %" 
+                            : ModifierList.CalculateTotal(AllStats.ConditionalTags).ToString("N2"))
+                        </th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    }
+}
+@code {
+    [Parameter]
+    public Stats AllStats { get; set; } = default!;
+
+    [Parameter]
+    public string Type { get; set; } = string.Empty;
+
+    [Parameter]
+    public bool IsPercentage { get; set; } = false;
+    
+    [Parameter]
+    public bool IsStandalone { get; set; } = false;
+
+    [Parameter]
+    public ModifierList? ModifierList { get; set; }
+}

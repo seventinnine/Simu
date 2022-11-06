@@ -1,0 +1,140 @@
+﻿@using Simu.Common
+@using Simu.Common.Constants
+
+
+<RadzenTabs>
+    <Tabs>
+        <RadzenTabsItem Text="General">
+            <RadzenText TextStyle="TextStyle.H4" >Defensive Stats</RadzenText>
+            <div class="d-flex flex-column p-2">
+                <FormattedStringComponent String="@DisplayConstants.FormattedStringHealth(AllStats.Health.Total)" OnMouseover="OverviewHealth"/>
+                <FormattedStringComponent String="@DisplayConstants.FormattedStringDefense(AllStats.Defense.Total)" OnMouseover="OverviewDefense"/>
+                <FormattedStringComponent String="@DisplayConstants.FormattedStringTrueDefense(AllStats.TrueDefense.Total)" OnMouseover="OverviewTrueDefense"/>
+                <FormattedStringComponent String="@DisplayConstants.FormattedStringSpeedWithOvercap(AllStats.Speed.Total, AllStats.Speed.TotalUncapped, AllStats.Speed.IsOvercapped())" OnMouseover="OverviewSpeed"/>
+            </div>
+            <RadzenText TextStyle="TextStyle.H4">Offensive Stats</RadzenText>
+            <div class="d-flex flex-column p-2">
+                <FormattedStringComponent String="@DisplayConstants.FormattedStringStrength(AllStats.Strength.Total)"  OnMouseover="OverviewStrength"/> 
+                <FormattedStringComponent String="@DisplayConstants.FormattedStringIntelligence(AllStats.Intelligence.Total)"  OnMouseover="OverviewIntelligence"/>
+                <FormattedStringComponent String="@DisplayConstants.FormattedStringAttackSpeedWithOvercap(AllStats.AttackSpeedPercent.Total, AllStats.AttackSpeedPercent.TotalUncapped, AllStats.AttackSpeedPercent.IsOvercapped())"  OnMouseover="OverviewAttackSpeed"/>
+                <FormattedStringComponent String="@DisplayConstants.FormattedStringFerocity(AllStats.Ferocity.Total)"  OnMouseover="OverviewFerocity"/>
+                <FormattedStringComponent String="@DisplayConstants.FormattedStringCritChanceWithOvercap(AllStats.CritChancePercent.Total, AllStats.CritChancePercent.TotalUncapped, AllStats.CritChancePercent.IsOvercapped())"  OnMouseover="OverviewCritChance"/>
+                <FormattedStringComponent String="@DisplayConstants.FormattedStringCritDamage(AllStats.CritDamagePercent.Total)"  OnMouseover="OverviewCritDamage"/>
+                <FormattedStringComponent String="@DisplayConstants.FormattedStringAbilityDamage(AllStats.AbilityDamagePercent.Total)"  OnMouseover="OverviewAbilityDamage"/>
+            </div>
+            <RadzenText TextStyle="TextStyle.H4">Misc Stats</RadzenText>
+            <div class="d-flex flex-column p-2">
+                <FormattedStringComponent String="@DisplayConstants.FormattedStringMagicFind(AllStats.MagicFind.Total)"  OnMouseover="OverviewMagicFind"/>
+                <FormattedStringComponent String="@DisplayConstants.FormattedStringPetLuck(AllStats.PetLuck.Total)"  OnMouseover="OverviewPetLuck"/>
+                <FormattedStringComponent String="@DisplayConstants.FormattedStringSeaCreatureChanceWithOvercap(AllStats.SeaCreatureChance.Total, AllStats.SeaCreatureChance.TotalUncapped, AllStats.SeaCreatureChance.IsOvercapped())"  OnMouseover="OverviewSeaCreatureChance"/> 
+            </div>
+        </RadzenTabsItem>
+        <RadzenTabsItem Text="Offense">
+            @if(Calculator.AttackMode == AttackMode.Melee)
+            {
+                <!-- TOOD: display selected conditions or make conditions here selectable(shared between all weapon types)-->
+                <RadzenText TextStyle="TextStyle.H3" >@Calculator.Weapon.Name</RadzenText>
+                <RadzenText TextStyle="TextStyle.H4" >Stats</RadzenText>
+                <div class="d-flex flex-column p-2">
+                    <!-- TODO: hpb/caynne, same for strength and stuff, art of war, move this to equipment classes tho-->
+                    <FormattedStringComponent String="@DisplayConstants.FormattedStringDamage(Calculator.Weapon.Damage)"/>
+                    <FormattedStringComponent String="@DisplayConstants.FormattedStringStrength(AllStats.Strength.Total)" OnMouseover="OverviewStrength"/>
+                    <FormattedStringComponent String="@DisplayConstants.FormattedStringAttackSpeedWithOvercap(AllStats.AttackSpeedPercent.Total, AllStats.AttackSpeedPercent.TotalUncapped, AllStats.AttackSpeedPercent.IsOvercapped())"  OnMouseover="OverviewAttackSpeed"/>
+                    <FormattedStringComponent String="@DisplayConstants.FormattedStringFerocity(AllStats.Ferocity.Total)"  OnMouseover="OverviewFerocity"/>
+                    <FormattedStringComponent String="@DisplayConstants.FormattedStringCritChanceWithOvercap(AllStats.CritChancePercent.Total, AllStats.CritChancePercent.TotalUncapped, AllStats.CritChancePercent.IsOvercapped())"  OnMouseover="OverviewCritChance"/>
+                    <FormattedStringComponent String="@DisplayConstants.FormattedStringCritDamage(AllStats.CritDamagePercent.Total)"  OnMouseover="OverviewCritDamage"/>
+                    <FormattedStringComponent String="@DisplayConstants.FormattedStringDamagePercent(AllStats.IncreasedDamageMeleePercent.CalculateTotal(AllStats.ConditionalTags))"  OnMouseover="OverviewDamageMelee"/>
+                </div>
+                <RadzenText TextStyle="TextStyle.H4" >Damage</RadzenText>
+                <div class="d-flex flex-column p-2">
+                    <span>Average hit: @(Calculator.Breakdown.DamagePerHit.ToString("N2"))</span>
+                    <span>Hits per second: @(Calculator.Breakdown.HitsPerSecond.ToString("N2"))</span>
+                    <span>DPS: @(Calculator.Breakdown.DamagePerSecond.ToString("N2"))</span>                
+                </div>
+            }
+            @if(Calculator.AttackMode == AttackMode.Ranged)
+            {
+                
+            }
+            @if (Calculator.AttackMode == AttackMode.Magic)
+            {
+
+            }
+        </RadzenTabsItem>
+        <RadzenTabsItem Text="Defense">
+
+        </RadzenTabsItem>
+    </Tabs>
+
+</RadzenTabs>
+
+@code {
+    ElementReference speed;
+
+    public void OverviewDamageMelee(ElementReference args)
+    {
+        tooltipService.Open(args, d => @<ModifierTable AllStats="AllStats" ModifierList="AllStats.IncreasedDamageMeleePercent" IsStandalone="true" />, _options);
+    }
+
+    #region StatOverview
+
+    public void OverviewHealth(ElementReference args)
+    {
+        tooltipService.Open(args, d => @<StatsTable AllStats="AllStats" Stat="AllStats.Health" />, _options);
+    }
+    public void OverviewDefense(ElementReference args)
+    {
+        tooltipService.Open(args, d => @<StatsTable AllStats="AllStats" Stat="AllStats.Defense" />, _options);
+    }
+    public void OverviewTrueDefense(ElementReference args)
+    {
+        tooltipService.Open(args, d => @<StatsTable AllStats="AllStats" Stat="AllStats.TrueDefense" />, _options);
+    }
+    public void OverviewSpeed(ElementReference args)
+    {
+        tooltipService.Open(args, d => @<StatsTable AllStats="AllStats" Stat="AllStats.Speed" />, _options);
+    }
+    public void OverviewStrength(ElementReference args)
+    {
+        tooltipService.Open(args, d => @<StatsTable AllStats="AllStats" Stat="AllStats.Strength" />, _options);
+    }
+    public void OverviewIntelligence(ElementReference args)
+    {
+        tooltipService.Open(args, d => @<StatsTable AllStats="AllStats" Stat="AllStats.Intelligence" />, _options);
+    }
+    public void OverviewAttackSpeed(ElementReference args)
+    {
+        tooltipService.Open(args, d => @<StatsTable AllStats="AllStats" Stat="AllStats.AttackSpeedPercent" />, _options);
+    }
+    public void OverviewFerocity(ElementReference args)
+    {
+        tooltipService.Open(args, d => @<StatsTable AllStats="AllStats" Stat="AllStats.Ferocity" />, _options);
+    }
+    public void OverviewCritChance(ElementReference args)
+    {
+        tooltipService.Open(args, d => @<StatsTable AllStats="AllStats" Stat="AllStats.CritChancePercent" />, _options);
+    }
+    public void OverviewCritDamage(ElementReference args)
+    {
+        tooltipService.Open(args, d => @<StatsTable AllStats="AllStats" Stat="AllStats.CritDamagePercent" />, _options);
+    }
+    public void OverviewAbilityDamage(ElementReference args)
+    {
+        tooltipService.Open(args, d => @<StatsTable AllStats="AllStats" Stat="AllStats.AbilityDamagePercent" />, _options);
+    }
+    public void OverviewMagicFind(ElementReference args)
+    {
+        tooltipService.Open(args, d => @<StatsTable AllStats="AllStats" Stat="AllStats.MagicFind" />, _options);
+    }
+    public void OverviewPetLuck(ElementReference args)
+    {
+        tooltipService.Open(args, d => @<StatsTable AllStats="AllStats" Stat="AllStats.PetLuck" />, _options);
+    }
+    public void OverviewSeaCreatureChance(ElementReference args)
+    {
+        tooltipService.Open(args, d => @<StatsTable AllStats="AllStats" Stat="AllStats.SeaCreatureChance" />
+    , _options);
+    }
+
+    #endregion
+}

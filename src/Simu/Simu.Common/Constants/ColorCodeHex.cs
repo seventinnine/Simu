@@ -10,10 +10,10 @@ namespace Simu.Common.Constants
     {
         public const string DEFAULT = "000000";
         public const string BLACK = "000000";
-        public const string DARK_BLUE = "0000aa";
+        public const string DARK_BLUE = "0000ff"; //TODO: find better color for this
         public const string DARK_GREEN = "00aa00";
         public const string DARK_AQUA = "00aaaa";
-        public const string DARK_RED = "aa0000";
+        public const string DARK_RED = "ff5555"; //TODO: find better color for this
         public const string DARK_PURPLE = "aa00aa";
         public const string GOLD = "ffaa00";
         public const string GRAY = "aaaaaa";

@@ -137,5 +137,143 @@ namespace Simu.Logic
                 _      => 465,                
             };
         }
+        public void UpdateModifiersForMelodyCompletion(List<string>? selectedSongNames, Modifier intelligence)
+        {
+
+            try
+            {
+                int sum = 0;
+                if (selectedSongNames != null)
+                {
+                    foreach (var item in selectedSongNames)
+                    {
+                        sum += Simu.Common.Systems.Profile.MelodySong.IntelligenceForSongs[item].Intelligence;
+                    }
+                }
+                
+                intelligence.Value = sum;
+            }
+            catch (Exception ex) 
+            {
+                //TODO: log?
+                intelligence.Value = 0;
+            }
+        }
+        public void UpdateModifiersForZombieSlayerLevels(int level, Modifier health)
+        {
+            if (level < ProfileConstants.SLAYER_LEVEL_MIN || level > ProfileConstants.SLAYER_LEVEL_MAX) return;
+
+            health.Value = level switch
+            {
+                1 => 2,
+                2 => 4,
+                3 => 7,
+                4 => 10,
+                5 => 14,
+                6 => 18,
+                7 => 23,
+                8 => 28,
+                9 => 34,
+                _ => 0
+            };
+        }
+        public void UpdateModifiersForSpiderSlayerLevels(int level, Modifier critChance, Modifier critDamage)
+        {
+            if (level < ProfileConstants.SLAYER_LEVEL_MIN || level > ProfileConstants.SLAYER_LEVEL_MAX) return;
+
+            critDamage.Value = level switch
+            {
+                1 => 1,
+                2 => 2,
+                3 => 3,
+                4 => 4,
+                5 => 6,
+                6 or 7 => 8,
+                8 => 11,
+                9 => 14,
+                _ => 0
+            };
+            critChance.Value = level switch
+            {
+                >= 7 and <= 9 => 1,
+                _ => 0
+            };
+        }
+        public void UpdateModifiersForWolfSlayerLevels(int level, Modifier speed, Modifier health, Modifier critDamage)
+        {
+            if (level < ProfileConstants.SLAYER_LEVEL_MIN || level > ProfileConstants.SLAYER_LEVEL_MAX) return;
+
+            speed.Value = level switch
+            {
+                1 or 2 => 1,
+                >= 3 and <= 8 => 2,
+                8 or 9 => 3,
+                _ => 0
+            };
+            health.Value = level switch
+            {
+                2 or 3 => 2,
+                4 or 5 => 4,
+                >= 6 and <= 8 => 7,
+                9 => 12,
+                _ => 0
+            };
+            critDamage.Value = level switch
+            {
+                < 5 => 0,
+                5 or 6 => 1,
+                >= 7 and <= 9 => 3,
+                _ => 0
+            };
+        }
+        public void UpdateModifiersForEndermanSlayerLevels(int level, Modifier health, Modifier intelligence)
+        {
+            if (level < ProfileConstants.SLAYER_LEVEL_MIN || level > ProfileConstants.SLAYER_LEVEL_MAX) return;
+
+            health.Value = level switch
+            {
+                1 or 2 => 1,
+                3 or 4 => 3,
+                5 or 6 => 6,
+                7 or 8 => 10,
+                9 => 15,
+                _ => 0
+            };
+            intelligence.Value = level switch
+            {
+                1 => 0,
+                2 or 3 => 1,
+                4 or 5 => 3,
+                6 or 7 => 6,
+                8 or 9 => 10,
+                _ => 0
+            };
+        }
+        public void UpdateModifiersForBlazeSlayerLevels(int level, Modifier health, Modifier strength, Modifier trueDefense)
+        {
+            if (level < ProfileConstants.SLAYER_LEVEL_MIN || level > ProfileConstants.SLAYER_LEVEL_MAX) return;
+
+            health.Value = level switch
+            {
+                1 or 2 => 3,
+                3 or 4 => 7,
+                5 or 6 => 12,
+                7 or 8 => 18,
+                9 => 25,
+                _ => 0
+            };
+            strength.Value = level switch
+            {
+                >= 2 and <= 5 => 1,
+                >= 6 and <= 9 => 3,
+                _ => 0
+            };
+            trueDefense.Value = level switch
+            {
+                >= 4 and <= 7 => 1,
+                >= 8 and <= 9 => 3,
+                _ => 0
+            };
+        }
     }
 }

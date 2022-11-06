@@ -8,6 +8,8 @@ namespace Simu.Common.Constants
 {
     public class ProfileConstants
     {
+        public static int calculations = 0;
+
         public const int SKYBLOCK_LEVEL_MIN = 0;
         public const int SKYBLOCK_LEVEL_MAX = 500;
         public const int SKYBLOCK_FARMING_MIN = 0;
@@ -30,5 +32,7 @@ namespace Simu.Common.Constants
         public const int SKYBLOCK_TAMING_MAX = 50;
         public const int SKYBLOCK_DUNGEONEERING_MIN = 0;
         public const int SKYBLOCK_DUNGEONEERING_MAX = 50;
+        public const int SLAYER_LEVEL_MIN = 0;
+        public const int SLAYER_LEVEL_MAX = 9;
     }
 }

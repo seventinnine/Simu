@@ -10,7 +10,7 @@ namespace Simu.Common
     {
         public static void Set<T>(ref T field, T newValue, Action action, Action propertyChanged, bool invokePropertyChanged = true)
         {
-            if (!EqualityComparer<T>.Default.Equals(newValue, field) && )
+            if (!EqualityComparer<T>.Default.Equals(newValue, field))
             {
                 field = newValue;
 

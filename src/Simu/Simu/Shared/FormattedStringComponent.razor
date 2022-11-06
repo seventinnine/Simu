@@ -1,21 +1,53 @@
 ﻿@using Simu.Common
 
-@foreach (var item in Strings!)
-{
-    @if(item.IsNewline)
+<div @ref="div" @onmouseover="args => HandleOnMouseOver(div)">
+
+    @if(String != null)
     {
-        <br/>
+        @if(String.IsNewline)
+        {
+            <br/>
+        }
+        else
+        {
+            <span class="@CssClass" style="@FormattedStringConverter.AsFormattedString(String)">@String.Content</span>
+        }
     }
-    else
-    {
-        <span class="@CssClass" style="@FormattedStringConverter.AsFormattedString(item)">@item.Content</span>
+
+    @if (Strings != null) {
+
+        @foreach (var item in Strings!)
+        {
+            @if(item.IsNewline)
+            {
+                <br/>
+            }
+            else
+            {
+                <span class="@CssClass" style="@FormattedStringConverter.AsFormattedString(item)">@item.Content</span>
+            }
+        }
     }
-}
+
+</div>
 
 @code {
+    ElementReference div;
+
     [Parameter]
     public string? CssClass { get; set; } = string.Empty;
 
     [Parameter]
-    public IEnumerable<FormattedString>? Strings { get; set; }
+    public IEnumerable<FormattedString>? Strings { get; set; } = null;
+
+    [Parameter]
+    public FormattedString? String { get; set; } = null;
+
+    [Parameter]
+    public Action<ElementReference>? OnMouseover { get; set; }
+
+    void HandleOnMouseOver(ElementReference args)
+    {
+        OnMouseover?.Invoke(args);
+    }
 }

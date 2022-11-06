@@ -56,6 +56,7 @@ namespace Simu.Common
         public decimal CalculateTotal(ModifierTag tags)
         {
             if (_cacheValid && _lastUsedTags.IsEqualTo(tags)) return _cachedValue;
+            Constants.ProfileConstants.calculations++;
             decimal result = CalculateTotalImpl(tags);
             _lastUsedTags = tags;
             _cacheValid = true;
@@ -143,5 +144,70 @@ namespace Simu.Common
         {
             return GetEnumerator();
         }
+    }
+    public class SumModifierList : ModifierList
+    {
+        public SumModifierList(Stat? refToStat = null) : base(refToStat)
+        {
+        }
+
+        protected override decimal CalculateTotalImpl(ModifierTag tags)
+        {
+            decimal sum = 0.0m;
+            foreach (var pair in Modifiers)
+            {
+                Constants.ProfileConstants.calculations++;
+                if (pair.Value.RequiredTags.IsSubsetOf(tags))
+                {
+                    sum += pair.Value.Value * pair.Value.LocalMultiplier;
+                }
+            }
+            return sum;
+        }
+
+        public override ModifierList Clone(Stat? refToStat = null)
+        {
+            ModifierList cpy = new SumModifierList(refToStat);
+            foreach (var entry in Modifiers)
+            {
+                cpy.Modifiers.Add(entry.Key, entry.Value.Clone(cpy));
+            }
+            return cpy;
+        }
+    }
+
+    public class ProductModifierList : ModifierList
+    {
+        private bool _isInverse;
+        public ProductModifierList(Stat? refToStat = null, bool isInverse = false) : base(refToStat)
+        {
+            _isInverse = isInverse;
+        }
+        protected override decimal CalculateTotalImpl(ModifierTag tags)
+        {
+            decimal product = 1.0m;
+            foreach (var pair in Modifiers)
+            {
+                Constants.ProfileConstants.calculations++;
+                if (pair.Value.RequiredTags.IsSubsetOf(tags))
+                {
+                    var p = (pair.Value.Value * pair.Value.LocalMultiplier) / 100.0m;
+                    product *= _isInverse ? 1.0m - p : 1.0m + p;
+                }
+            }
+            return product;
+        }
+
+        public override ModifierList Clone(Stat? refToStat = null)
+        {
+            ModifierList cpy = new ProductModifierList(refToStat, _isInverse);
+            foreach (var entry in Modifiers)
+            {
+                cpy.Modifiers.Add(entry.Key, entry.Value.Clone(cpy));
+            }
+            return cpy;
+
+        }
+
     }
 }
